@@ -29,6 +29,7 @@ import Button from '../components/common/Button';
 import Badge from '../components/common/Badge';
 import Modal from '../components/common/Modal';
 import { useToast } from '../context/ToastContext';
+import { storageService } from '../services/storageService';
 
 const AVAILABLE_CATEGORIES = [
   { id: 'barbearia', label: 'Barbearia' },
@@ -136,19 +137,24 @@ export default function AdminMaintenance() {
   const fetchAdminData = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/admin/users');
-      if (res.ok) {
-        const result = await res.json();
-        setData(result);
+      const result = await storageService.getAdminData();
+      setData({
+        professionals: result.professionals || [],
+        clients: result.clients || []
+      });
 
-        if (result.professionals && result.professionals.length > 0 && !selectedProId) {
-          setSelectedProId(result.professionals[0].id);
-          setSelectedMethods(result.professionals[0].paymentMethods || []);
-        }
+      if (result.professionals && result.professionals.length > 0 && !selectedProId) {
+        setSelectedProId(result.professionals[0].id);
+        setSelectedMethods(result.professionals[0].paymentMethods || []);
       }
     } catch (err) {
-      console.error('Erro ao carregar dados admin:', err);
-      addToast('Erro ao carregar dados do servidor MySQL', 'error');
+      console.warn('Erro ao carregar dados admin, recorrendo a dados locais:', err);
+      const pros = storageService.getProfessionals();
+      const clients = storageService.getClients();
+      setData({
+        professionals: pros || [],
+        clients: clients || []
+      });
     } finally {
       setLoading(false);
     }
@@ -193,27 +199,18 @@ export default function AdminMaintenance() {
 
     setSavingCreate(true);
     try {
-      const res = await fetch('http://localhost:5000/api/admin/users/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userType: createType,
-          ...createForm
-        })
-      });
+      const res = await storageService.createAdminUser(createForm, createType);
 
-      const resData = await res.json();
-
-      if (res.ok) {
-        addToast(resData.message || 'Usuário criado com sucesso no MySQL!', 'success');
+      if (res.success) {
+        addToast(res.message || 'Usuário criado com sucesso!', 'success');
         setCreateModalOpen(false);
         await fetchAdminData();
       } else {
-        addToast(resData.error || 'Erro ao criar usuário', 'error');
+        addToast(res.message || 'Erro ao criar usuário', 'error');
       }
     } catch (err) {
       console.error(err);
-      addToast('Erro ao conectar ao servidor MySQL', 'error');
+      addToast('Erro ao processar criação de usuário', 'error');
     } finally {
       setSavingCreate(false);
     }
@@ -261,24 +258,18 @@ export default function AdminMaintenance() {
 
     setSavingEditPro(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/professionals/${editProForm.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editProForm)
-      });
+      const res = await storageService.updateAdminPro(editProForm.id, editProForm);
 
-      const resData = await res.json();
-
-      if (res.ok) {
-        addToast(resData.message || 'Profissional atualizado com sucesso!', 'success');
+      if (res.success) {
+        addToast(res.message || 'Profissional atualizado com sucesso!', 'success');
         setEditProModalOpen(false);
         await fetchAdminData();
       } else {
-        addToast(resData.error || 'Erro ao atualizar profissional', 'error');
+        addToast(res.message || 'Erro ao atualizar profissional', 'error');
       }
     } catch (err) {
       console.error(err);
-      addToast('Erro ao comunicar com o servidor MySQL', 'error');
+      addToast('Erro ao atualizar profissional', 'error');
     } finally {
       setSavingEditPro(false);
     }
@@ -307,24 +298,18 @@ export default function AdminMaintenance() {
 
     setSavingEditClient(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/clients/${editClientForm.id || editClientForm.email}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editClientForm)
-      });
+      const res = await storageService.updateAdminClient(editClientForm.id || editClientForm.email, editClientForm);
 
-      const resData = await res.json();
-
-      if (res.ok) {
-        addToast(resData.message || 'Cliente atualizado com sucesso!', 'success');
+      if (res.success) {
+        addToast(res.message || 'Cliente atualizado com sucesso!', 'success');
         setEditClientModalOpen(false);
         await fetchAdminData();
       } else {
-        addToast(resData.error || 'Erro ao atualizar cliente', 'error');
+        addToast(res.message || 'Erro ao atualizar cliente', 'error');
       }
     } catch (err) {
       console.error(err);
-      addToast('Erro ao comunicar com o servidor MySQL', 'error');
+      addToast('Erro ao atualizar cliente', 'error');
     } finally {
       setSavingEditClient(false);
     }
@@ -341,37 +326,33 @@ export default function AdminMaintenance() {
 
     try {
       if (userToDelete.type === 'professional') {
-        const res = await fetch(`http://localhost:5000/api/admin/professionals/${userToDelete.id}`, {
-          method: 'DELETE'
-        });
+        const res = await storageService.deleteAdminPro(userToDelete.id);
 
-        if (res.ok) {
-          addToast(`Profissional "${userToDelete.commercialName}" excluído com sucesso!`, 'success');
+        if (res.success) {
+          addToast(res.message || `Profissional "${userToDelete.commercialName}" excluído com sucesso!`, 'success');
           setData(prev => ({
             ...prev,
             professionals: prev.professionals.filter(p => p.id !== userToDelete.id)
           }));
         } else {
-          addToast('Erro ao excluir profissional no MySQL', 'error');
+          addToast(res.message || 'Erro ao excluir profissional', 'error');
         }
       } else {
-        const res = await fetch(`http://localhost:5000/api/admin/clients/${userToDelete.id || ''}?email=${encodeURIComponent(userToDelete.email)}&phone=${encodeURIComponent(userToDelete.phone || '')}`, {
-          method: 'DELETE'
-        });
+        const res = await storageService.deleteAdminClient(userToDelete.id, userToDelete.email, userToDelete.phone);
 
-        if (res.ok) {
-          addToast('Histórico do cliente removido com sucesso!', 'success');
+        if (res.success) {
+          addToast(res.message || 'Histórico do cliente removido com sucesso!', 'success');
           setData(prev => ({
             ...prev,
             clients: prev.clients.filter(c => c.email !== userToDelete.email && c.id !== userToDelete.id)
           }));
         } else {
-          addToast('Erro ao excluir cliente no MySQL', 'error');
+          addToast(res.message || 'Erro ao excluir cliente', 'error');
         }
       }
     } catch (err) {
       console.error(err);
-      addToast('Erro ao comunicar com o banco de dados', 'error');
+      addToast('Erro ao excluir usuário', 'error');
     } finally {
       setDeleteModalOpen(false);
       setUserToDelete(null);
@@ -407,14 +388,10 @@ export default function AdminMaintenance() {
     setSavingPayments(true);
 
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/professionals/${selectedProId}/payment-methods`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentMethods: selectedMethods })
-      });
+      const res = await storageService.updateAdminPaymentMethods(selectedProId, selectedMethods);
 
-      if (res.ok) {
-        addToast('Formas de pagamento salvas com sucesso no MySQL!', 'success');
+      if (res.success) {
+        addToast(res.message || 'Formas de pagamento salvas com sucesso!', 'success');
         setData(prev => ({
           ...prev,
           professionals: prev.professionals.map(p => 
@@ -422,11 +399,11 @@ export default function AdminMaintenance() {
           )
         }));
       } else {
-        addToast('Erro ao salvar no banco de dados', 'error');
+        addToast(res.message || 'Erro ao salvar formas de pagamento', 'error');
       }
     } catch (err) {
       console.error(err);
-      addToast('Erro ao comunicar com o servidor MySQL', 'error');
+      addToast('Erro ao salvar formas de pagamento', 'error');
     } finally {
       setSavingPayments(false);
     }

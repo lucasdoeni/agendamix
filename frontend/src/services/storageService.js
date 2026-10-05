@@ -1,6 +1,7 @@
-import { INITIAL_PROFESSIONALS, INITIAL_BOOKINGS } from '../data/mockData';
+import { INITIAL_PROFESSIONALS, INITIAL_CLIENTS, INITIAL_BOOKINGS } from '../data/mockData';
 
 const PROS_KEY = 'agendamix_professionals_v1';
+const CLIENTS_KEY = 'agendamix_clients_v1';
 const BOOKINGS_KEY = 'agendamix_bookings_v1';
 const API_URL = 'http://localhost:5000/api';
 
@@ -19,6 +20,10 @@ export async function initStorage() {
     if (!localStorage.getItem(PROS_KEY)) {
       localStorage.setItem(PROS_KEY, JSON.stringify(INITIAL_PROFESSIONALS));
     }
+  }
+
+  if (!localStorage.getItem(CLIENTS_KEY)) {
+    localStorage.setItem(CLIENTS_KEY, JSON.stringify(INITIAL_CLIENTS || []));
   }
 
   if (!localStorage.getItem(BOOKINGS_KEY)) {
@@ -406,8 +411,257 @@ export const storageService = {
     return bookings[index];
   },
 
+  // CLIENTES
+  getClients() {
+    try {
+      const data = localStorage.getItem(CLIENTS_KEY);
+      return data ? JSON.parse(data) : (INITIAL_CLIENTS || []);
+    } catch {
+      return INITIAL_CLIENTS || [];
+    }
+  },
+
+  // PORTAL DE MANUTENÇÃO / ADMIN
+  async getAdminData() {
+    // 1. Tenta carregar dados do servidor MySQL
+    try {
+      const res = await fetch(`${API_URL}/admin/users`);
+      if (res.ok) {
+        const result = await res.json();
+        if (result.professionals && Array.isArray(result.professionals)) {
+          localStorage.setItem(PROS_KEY, JSON.stringify(result.professionals));
+        }
+        if (result.clients && Array.isArray(result.clients)) {
+          localStorage.setItem(CLIENTS_KEY, JSON.stringify(result.clients));
+        }
+        return {
+          professionals: result.professionals || [],
+          clients: result.clients || [],
+          isOnline: true
+        };
+      }
+    } catch (err) {
+      console.warn('Backend MySQL offline ou indisponível (usando cache local/demo):', err.message);
+    }
+
+    // 2. Fallback automático seguro (modo offline / GitHub Pages)
+    const pros = this.getProfessionals();
+    const clients = this.getClients();
+    const bookings = this.getBookings();
+
+    const enrichedPros = pros.map(p => ({
+      ...p,
+      categories: p.categories || (p.category ? p.category.split(',').map(m => m.trim()) : ['barbearia']),
+      paymentMethods: p.paymentMethods || (p.payment_methods ? p.payment_methods.split(',').map(m => m.trim()) : ['Pix', 'Cartão de Crédito', 'Cartão de Débito', 'Dinheiro']),
+      servicesCount: Array.isArray(p.services) ? p.services.length : 0,
+      bookingsCount: bookings.filter(b => b.proId === p.id).length
+    }));
+
+    const enrichedClients = clients.map(c => {
+      const clientBookings = bookings.filter(b => b.clientEmail === c.email || b.clientPhone === c.phone);
+      return {
+        ...c,
+        totalBookings: clientBookings.length,
+        lastBookingDate: clientBookings.length > 0 ? clientBookings[0].createdAt : null
+      };
+    });
+
+    return {
+      professionals: enrichedPros,
+      clients: enrichedClients,
+      isOnline: false
+    };
+  },
+
+  async createAdminUser(userData, userType = 'professional') {
+    // 1. Tenta MySQL
+    try {
+      const res = await fetch(`${API_URL}/admin/users/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userType, ...userData })
+      });
+      if (res.ok) {
+        const result = await res.json();
+        return { success: true, message: result.message, id: result.id };
+      }
+    } catch (err) {
+      console.warn('Backend offline, salvando usuário localmente:', err.message);
+    }
+
+    // 2. Fallback local
+    if (userType === 'professional') {
+      const pros = this.getProfessionals();
+      const newPro = {
+        id: 'pro-' + Date.now(),
+        name: userData.name,
+        commercialName: userData.commercialName,
+        category: Array.isArray(userData.categories) ? userData.categories[0] : (userData.category || 'barbearia'),
+        categories: userData.categories || ['barbearia'],
+        email: userData.email,
+        phone: userData.phone || '',
+        street: userData.street || '',
+        number: userData.number || '',
+        neighborhood: userData.neighborhood || '',
+        complement: userData.complement || '',
+        city: userData.city || 'São Paulo',
+        state: userData.state || 'SP',
+        country: userData.country || 'Brasil',
+        address: userData.address || `${userData.street || ''}, ${userData.number || ''}`,
+        bio: userData.bio || 'Profissional cadastrado.',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+        coverImage: 'https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=1200&q=80',
+        rating: 5.0,
+        reviewCount: 1,
+        featured: false,
+        paymentMethods: userData.paymentMethods || ['Pix', 'Cartão de Crédito', 'Cartão de Débito', 'Dinheiro'],
+        services: [
+          { id: 'srv-' + Date.now(), name: 'Atendimento Personalizado', price: 60, duration: 40, description: 'Serviço padrão' }
+        ],
+        schedule: { daysOfWeek: [1,2,3,4,5,6], startHour: '09:00', endHour: '19:00', lunchStart: '12:00', lunchEnd: '13:00', slotInterval: 30 }
+      };
+      pros.unshift(newPro);
+      localStorage.setItem(PROS_KEY, JSON.stringify(pros));
+      return { success: true, message: `Profissional "${newPro.commercialName}" cadastrado com sucesso!`, id: newPro.id };
+    } else {
+      const clients = this.getClients();
+      const newClient = {
+        id: 'cli-' + Date.now(),
+        name: userData.name,
+        email: userData.email,
+        phone: userData.phone || '',
+        createdAt: new Date().toISOString(),
+        totalBookings: 0,
+        lastBookingDate: null
+      };
+      clients.unshift(newClient);
+      localStorage.setItem(CLIENTS_KEY, JSON.stringify(clients));
+      return { success: true, message: `Cliente "${newClient.name}" cadastrado com sucesso!`, id: newClient.id };
+    }
+  },
+
+  async updateAdminPro(id, updateData) {
+    // 1. Tenta MySQL
+    try {
+      const res = await fetch(`${API_URL}/admin/professionals/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateData)
+      });
+      if (res.ok) {
+        const result = await res.json();
+        return { success: true, message: result.message };
+      }
+    } catch (err) {
+      console.warn('Backend offline, atualizando profissional localmente:', err.message);
+    }
+
+    // 2. Fallback local
+    const pros = this.getProfessionals();
+    const idx = pros.findIndex(p => p.id === id);
+    if (idx !== -1) {
+      pros[idx] = { ...pros[idx], ...updateData };
+      localStorage.setItem(PROS_KEY, JSON.stringify(pros));
+      return { success: true, message: `Profissional "${pros[idx].commercialName}" atualizado com sucesso!` };
+    }
+    return { success: false, message: 'Profissional não encontrado.' };
+  },
+
+  async updateAdminClient(id, updateData) {
+    // 1. Tenta MySQL
+    try {
+      const res = await fetch(`${API_URL}/admin/clients/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateData)
+      });
+      if (res.ok) {
+        const result = await res.json();
+        return { success: true, message: result.message };
+      }
+    } catch (err) {
+      console.warn('Backend offline, atualizando cliente localmente:', err.message);
+    }
+
+    // 2. Fallback local
+    const clients = this.getClients();
+    const idx = clients.findIndex(c => c.id === id || c.email === id);
+    if (idx !== -1) {
+      clients[idx] = { ...clients[idx], ...updateData };
+      localStorage.setItem(CLIENTS_KEY, JSON.stringify(clients));
+      return { success: true, message: `Cliente "${clients[idx].name}" atualizado com sucesso!` };
+    }
+    return { success: false, message: 'Cliente não encontrado.' };
+  },
+
+  async deleteAdminPro(id) {
+    // 1. Tenta MySQL
+    try {
+      const res = await fetch(`${API_URL}/admin/professionals/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        const result = await res.json();
+        return { success: true, message: result.message };
+      }
+    } catch (err) {
+      console.warn('Backend offline, excluindo profissional localmente:', err.message);
+    }
+
+    // 2. Fallback local
+    const pros = this.getProfessionals();
+    const filtered = pros.filter(p => p.id !== id);
+    localStorage.setItem(PROS_KEY, JSON.stringify(filtered));
+    return { success: true, message: 'Profissional excluído com sucesso!' };
+  },
+
+  async deleteAdminClient(id, email, phone) {
+    // 1. Tenta MySQL
+    try {
+      const res = await fetch(`${API_URL}/admin/clients/${id || ''}?email=${encodeURIComponent(email || '')}&phone=${encodeURIComponent(phone || '')}`, { method: 'DELETE' });
+      if (res.ok) {
+        const result = await res.json();
+        return { success: true, message: result.message };
+      }
+    } catch (err) {
+      console.warn('Backend offline, excluindo cliente localmente:', err.message);
+    }
+
+    // 2. Fallback local
+    const clients = this.getClients();
+    const filtered = clients.filter(c => c.id !== id && c.email !== email);
+    localStorage.setItem(CLIENTS_KEY, JSON.stringify(filtered));
+    return { success: true, message: 'Cliente excluído com sucesso!' };
+  },
+
+  async updateAdminPaymentMethods(id, paymentMethods) {
+    // 1. Tenta MySQL
+    try {
+      const res = await fetch(`${API_URL}/admin/professionals/${id}/payment-methods`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentMethods })
+      });
+      if (res.ok) {
+        const result = await res.json();
+        return { success: true, message: result.message };
+      }
+    } catch (err) {
+      console.warn('Backend offline, salvando formas de pagamento localmente:', err.message);
+    }
+
+    // 2. Fallback local
+    const pros = this.getProfessionals();
+    const idx = pros.findIndex(p => p.id === id);
+    if (idx !== -1) {
+      pros[idx].paymentMethods = paymentMethods;
+      localStorage.setItem(PROS_KEY, JSON.stringify(pros));
+      return { success: true, message: 'Formas de pagamento atualizadas com sucesso!' };
+    }
+    return { success: false, message: 'Profissional não encontrado.' };
+  },
+
   resetToDefault() {
     localStorage.setItem(PROS_KEY, JSON.stringify(INITIAL_PROFESSIONALS));
+    localStorage.setItem(CLIENTS_KEY, JSON.stringify(INITIAL_CLIENTS || []));
     localStorage.setItem(BOOKINGS_KEY, JSON.stringify(INITIAL_BOOKINGS));
   }
 };

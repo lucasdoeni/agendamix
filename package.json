@@ -4,11 +4,20 @@
   "description": "AgendaMix - Plataforma de Agendamento Online para Beleza & Estética",
   "private": true,
   "scripts": {
-    "dev": "node -e \"console.log('Inicie o backend e o frontend com npm run dev:backend e npm run dev:frontend')\"",
+    "dev": "concurrently -n \"BACKEND,FRONTEND\" -c \"blue,green\" \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "npm --prefix backend run dev",
     "dev:frontend": "npm --prefix frontend run dev",
     "seed": "npm --prefix backend run seed",
     "build": "npm --prefix frontend run build"
   },
-  "keywords": ["agendamix", "react", "nodejs", "mysql", "express"]
+  "keywords": [
+    "agendamix",
+    "react",
+    "nodejs",
+    "mysql",
+    "express"
+  ],
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
 }

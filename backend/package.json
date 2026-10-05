@@ -24,6 +24,8 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "multer": "^2.4.0",
-    "mysql2": "^3.11.5"
+    "mysql2": "^3.11.5",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1"
   }
 }

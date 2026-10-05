@@ -6,6 +6,7 @@ import { initDatabase } from './database/initDb.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { swaggerUi, swaggerSpec, swaggerOptions } from './config/swagger.js';
 
 import authRoutes from './routes/authRoutes.js';
 import professionalsRoutes from './routes/professionalsRoutes.js';
@@ -67,6 +68,13 @@ app.use('/api/bookings', bookingsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/upload', uploadRoutes);
 
+// Documentação Swagger Interativa
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerOptions));
+app.get('/api-docs.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
+
 // Tratamento de rota não encontrada
 app.use((req, res) => {
   res.status(404).json({ error: `Rota não encontrada: ${req.method} ${req.originalUrl}` });
@@ -76,6 +84,7 @@ app.use((req, res) => {
 app.listen(PORT, async () => {
   console.log(`🚀 [AgendaMix Server] Servidor backend rodando na porta ${PORT}`);
   console.log(`📡 [API Health] http://localhost:${PORT}/api/health`);
+  console.log(`📚 [Swagger Docs] http://localhost:${PORT}/api-docs`);
   const isConnected = await testDbConnection();
   if (isConnected) {
     await initDatabase();

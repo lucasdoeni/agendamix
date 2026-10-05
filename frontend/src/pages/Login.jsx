@@ -49,15 +49,15 @@ export default function Login() {
     }
 
     if (!email.trim()) {
-      addToast('Informe o seu usuário ou e-mail', 'error');
+      addToast('Informe o seu e-mail de cadastro', 'error');
       return;
     }
 
     setLoading(true);
     try {
       const loggedUser = await login(email, password, role);
-      addToast('Login realizado com sucesso!', 'success');
-      if (role === 'professional' || loggedUser?.type === 'professional') {
+      addToast(`Bem-vindo, ${loggedUser.name || 'usuário'}!`, 'success');
+      if (loggedUser?.type === 'professional') {
         navigate('/painel-profissional', { replace: true });
       } else {
         navigate('/meus-agendamentos', { replace: true });
@@ -142,12 +142,16 @@ export default function Login() {
         <div className="card" style={{ padding: '28px' }}>
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label className="form-label">Usuário ou E-mail</label>
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Mail size={15} color="#64748b" />
+                E-mail de Cadastro
+              </label>
               <div style={{ position: 'relative' }}>
                 <input
                   type="text"
+                  required
                   className="form-input"
-                  placeholder={role === 'professional' ? 'seu.email@exemplo.com' : 'cliente@exemplo.com'}
+                  placeholder={role === 'professional' ? 'ex: juliebettini@gmail.com' : 'ex: lucasdoeni@gmail.com'}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
@@ -155,9 +159,13 @@ export default function Login() {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Senha</label>
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Lock size={15} color="#64748b" />
+                Senha
+              </label>
               <input
                 type="password"
+                required
                 className="form-input"
                 placeholder="••••••••"
                 value={password}
@@ -177,6 +185,22 @@ export default function Login() {
               Entrar
             </Button>
           </form>
+
+          <div style={{
+            marginTop: '18px',
+            padding: '12px 14px',
+            borderRadius: '8px',
+            backgroundColor: '#f1f5f9',
+            fontSize: '0.8rem',
+            color: '#475569',
+            lineHeight: 1.4
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, color: '#334155', marginBottom: '4px' }}>
+              <ShieldCheck size={14} color="#2563eb" />
+              <span>Acesso Unificado por E-mail</span>
+            </div>
+            Acesse digitando seu e-mail cadastrado. O sistema reconhece sua conta (profissional ou cliente) e abre o painel correto automaticamente.
+          </div>
         </div>
 
         <div style={{ textAlign: 'center', marginTop: '20px' }}>

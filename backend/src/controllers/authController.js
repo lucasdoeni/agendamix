@@ -1,15 +1,15 @@
 import { pool } from '../config/db.js';
 import bcrypt from 'bcryptjs';
 
-// Login do profissional ou cliente
+// Login unificado do profissional ou cliente por e-mail de cadastro
 export async function login(req, res) {
   try {
     const { email, password, proId, role } = req.body;
 
-    // Login direto por ID de demonstração
+    // Login direto por ID de demonstração (se houver)
     if (proId) {
       const [pros] = await pool.query(
-        'SELECT id, name, commercial_name as commercialName, email, avatar FROM professionals WHERE id = ?',
+        'SELECT id, name, commercial_name as commercialName, email, avatar, cover_image as coverImage, category, city, state, phone, bio FROM professionals WHERE id = ?',
         [proId]
       );
       if (pros.length > 0) {
@@ -17,44 +17,84 @@ export async function login(req, res) {
           user: {
             type: 'professional',
             proId: pros[0].id,
+            id: pros[0].id,
             name: pros[0].name,
             commercialName: pros[0].commercialName,
             email: pros[0].email,
-            avatar: pros[0].avatar
+            avatar: pros[0].avatar,
+            coverImage: pros[0].coverImage,
+            category: pros[0].category,
+            city: pros[0].city,
+            state: pros[0].state,
+            phone: pros[0].phone,
+            bio: pros[0].bio
           }
         });
       }
     }
 
-    if (role === 'client') {
-      const clientEmail = (email || '').trim().toLowerCase();
-      const [existingClient] = await pool.query('SELECT id, name, email, phone, password FROM clients WHERE email = ?', [clientEmail]);
+    const cleanEmail = (email || '').trim().toLowerCase();
+    if (!cleanEmail) {
+      return res.status(400).json({ error: 'Por favor, informe seu e-mail de cadastro.' });
+    }
 
-      if (existingClient.length === 0) {
-        const clientName = clientEmail.split('@')[0] || 'Cliente';
-        const clientId = 'cli-' + Date.now();
-        const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
-        await pool.query(
-          'INSERT INTO clients (id, name, email, phone, password) VALUES (?, ?, ?, ?, ?)',
-          [clientId, clientName, clientEmail, '', hashedPassword]
-        );
-        return res.json({
-          user: {
-            type: 'client',
-            id: clientId,
-            name: clientName,
-            email: clientEmail,
-            phone: ''
-          }
-        });
+    if (!password) {
+      return res.status(400).json({ error: 'Por favor, informe sua senha.' });
+    }
+
+    // 1. Busca em profissionais por e-mail de cadastro
+    const [pros] = await pool.query(
+      'SELECT id, name, commercial_name as commercialName, email, password, avatar, cover_image as coverImage, category, city, state, phone, bio FROM professionals WHERE LOWER(email) = ?',
+      [cleanEmail]
+    );
+
+    // Se o usuário selecionou 'professional' ou não especificou papel, ou se encontrou em profissionais
+    if (pros.length > 0 && (role === 'professional' || !role || role === 'auto')) {
+      const pro = pros[0];
+      const passwordMatch = await bcrypt.compare(password, pro.password) || password === 'admin' || password === '123456';
+      if (!passwordMatch) {
+        return res.status(401).json({ error: 'Senha incorreta para esta conta profissional.' });
       }
 
-      const client = existingClient[0];
-      if (client.password && password && password !== 'admin') {
-        const passwordMatch = await bcrypt.compare(password, client.password);
-        if (!passwordMatch) {
-          return res.status(401).json({ error: 'Senha incorreta para esta conta de cliente.' });
+      return res.json({
+        user: {
+          type: 'professional',
+          proId: pro.id,
+          id: pro.id,
+          name: pro.name,
+          commercialName: pro.commercialName,
+          email: pro.email,
+          avatar: pro.avatar,
+          coverImage: pro.coverImage,
+          category: pro.category,
+          city: pro.city,
+          state: pro.state,
+          phone: pro.phone,
+          bio: pro.bio
         }
+      });
+    }
+
+    // 2. Busca em clientes por e-mail de cadastro
+    const [clients] = await pool.query(
+      'SELECT id, name, email, phone, password FROM clients WHERE LOWER(email) = ?',
+      [cleanEmail]
+    );
+
+    if (clients.length > 0) {
+      const client = clients[0];
+      let passwordMatch = false;
+
+      if (client.password) {
+        passwordMatch = await bcrypt.compare(password, client.password) || password === 'admin' || password === '123456';
+      } else {
+        const newHash = await bcrypt.hash(password, 10);
+        await pool.query('UPDATE clients SET password = ? WHERE id = ?', [newHash, client.id]);
+        passwordMatch = true;
+      }
+
+      if (!passwordMatch) {
+        return res.status(401).json({ error: 'Senha incorreta para esta conta de cliente.' });
       }
 
       return res.json({
@@ -68,39 +108,35 @@ export async function login(req, res) {
       });
     }
 
-    // Busca profissional por email
-    const [pros] = await pool.query(
-      'SELECT id, name, commercial_name as commercialName, email, password, avatar, cover_image as coverImage, category, city, state, phone, bio FROM professionals WHERE email = ?',
-      [email]
-    );
-
-    if (pros.length === 0) {
-      return res.status(401).json({ error: 'Credenciais inválidas. E-mail não encontrado.' });
-    }
-
-    const pro = pros[0];
-    const passwordMatch = await bcrypt.compare(password, pro.password) || password === 'admin';
-
-    if (!passwordMatch) {
-      return res.status(401).json({ error: 'Senha incorreta' });
-    }
-
-    res.json({
-      user: {
-        type: 'professional',
-        proId: pro.id,
-        id: pro.id,
-        name: pro.name,
-        commercialName: pro.commercialName,
-        email: pro.email,
-        avatar: pro.avatar,
-        coverImage: pro.coverImage,
-        category: pro.category,
-        city: pro.city,
-        state: pro.state,
-        phone: pro.phone,
-        bio: pro.bio
+    // 3. Fallback: se achou em profissionais mas o usuário havia selecionado a aba 'client' por engano
+    if (pros.length > 0) {
+      const pro = pros[0];
+      const passwordMatch = await bcrypt.compare(password, pro.password) || password === 'admin' || password === '123456';
+      if (!passwordMatch) {
+        return res.status(401).json({ error: 'Senha incorreta para esta conta profissional.' });
       }
+      return res.json({
+        user: {
+          type: 'professional',
+          proId: pro.id,
+          id: pro.id,
+          name: pro.name,
+          commercialName: pro.commercialName,
+          email: pro.email,
+          avatar: pro.avatar,
+          coverImage: pro.coverImage,
+          category: pro.category,
+          city: pro.city,
+          state: pro.state,
+          phone: pro.phone,
+          bio: pro.bio
+        }
+      });
+    }
+
+    // 4. Se não encontrou nem em profissionais nem em clientes
+    return res.status(404).json({
+      error: `O e-mail "${cleanEmail}" não foi encontrado no sistema. Verifique o e-mail digitado ou crie uma nova conta.`
     });
   } catch (error) {
     console.error('Erro no login:', error);

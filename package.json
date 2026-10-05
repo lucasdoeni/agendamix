@@ -8,6 +8,7 @@
     "dev:backend": "npm --prefix backend run dev",
     "dev:frontend": "npm --prefix frontend run dev",
     "seed": "npm --prefix backend run seed",
+    "sync:dump": "npm --prefix backend run sync:dump",
     "build": "npm --prefix frontend run build"
   },
   "keywords": [

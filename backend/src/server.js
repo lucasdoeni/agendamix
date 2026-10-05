@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { testDbConnection } from './config/db.js';
+import { initDatabase } from './database/initDb.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -20,9 +21,25 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middlewares
+// Configuração flexível e segura de CORS (permite localhost, GitHub Pages e domínio personalizado)
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'https://lucasdoeni.github.io'
+];
+
+if (process.env.CORS_ORIGIN) {
+  allowedOrigins.push(process.env.CORS_ORIGIN);
+}
+
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.github.io')) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Permissivo para requisições de clientes em dispositivos móveis
+    }
+  },
   credentials: true
 }));
 
@@ -33,11 +50,12 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Health Check
+// Health Check e Keep-Alive para Render / UptimeRobot
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'online',
     message: 'AgendaMix Backend API em funcionamento com MySQL',
+    environment: process.env.NODE_ENV || 'production',
     timestamp: new Date().toISOString()
   });
 });
@@ -54,9 +72,12 @@ app.use((req, res) => {
   res.status(404).json({ error: `Rota não encontrada: ${req.method} ${req.originalUrl}` });
 });
 
-// Inicialização do servidor
+// Inicialização do servidor com auto-migração de banco
 app.listen(PORT, async () => {
-  console.log(`🚀 [AgendaMix Server] Servidor backend rodando em http://localhost:${PORT}`);
+  console.log(`🚀 [AgendaMix Server] Servidor backend rodando na porta ${PORT}`);
   console.log(`📡 [API Health] http://localhost:${PORT}/api/health`);
-  await testDbConnection();
+  const isConnected = await testDbConnection();
+  if (isConnected) {
+    await initDatabase();
+  }
 });

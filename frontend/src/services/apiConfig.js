@@ -3,9 +3,8 @@
  * 
  * Regra de Segurança:
  * Em produção / GitHub Pages (qualquer domínio diferente de localhost),
- * a API_URL é estritamente null. Nenhuma requisição a localhost:5000 é disparada.
- * Isso impede que o navegador solicite permissão de rede privada/dispositivo local
- * e garante que o usuário final acesse a aplicação em modo autônomo e seguro.
+ * a API_URL só é disparada caso haja uma URL segura na nuvem (VITE_API_URL).
+ * NUNCA efetua requisições para 'localhost:5000' quando acessado via GitHub Pages.
  */
 
 export const isLocalEnvironment = () => {
@@ -14,4 +13,9 @@ export const isLocalEnvironment = () => {
   return hostname === 'localhost' || hostname === '127.0.0.1';
 };
 
-export const API_URL = isLocalEnvironment() ? 'http://localhost:5000/api' : null;
+// URL da API na nuvem (definida no Render / deploy em nuvem)
+export const CLOUD_API_URL = import.meta.env.VITE_API_URL || null;
+
+export const API_URL = isLocalEnvironment() 
+  ? 'http://localhost:5000/api' 
+  : (CLOUD_API_URL ? `${CLOUD_API_URL.replace(/\/$/, '')}/api` : null);

@@ -289,35 +289,57 @@ img {
   gap: 14px;
 }
 
-/* Grid de Atendimentos do Painel Pro */
-.dashboard-grid-bookings {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-@media (min-width: 1150px) {
-  .dashboard-grid-bookings {
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-  }
-}
-
+/* Grid de Métricas (KPIs) do Painel Pro */
 .dashboard-kpi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 16px;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
 }
 
+.dashboard-kpi-grid > * {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Grid de Atendimentos de Hoje e Próximos na Semana */
+.dashboard-grid-bookings {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.dashboard-grid-bookings > * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  overflow: hidden;
+}
+
+/* Telas médias e desktops (>= 992px): 2 colunas perfeitamente alinhadas aos 4 KPIs */
+@media (min-width: 992px) {
+  .dashboard-grid-bookings {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+}
+
+/* Ajustes finos para Mobile (smartphones <= 640px) */
 @media (max-width: 640px) {
   .dashboard-kpi-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    margin-bottom: 16px !important;
+  }
+  .dashboard-grid-bookings {
     grid-template-columns: 1fr !important;
     gap: 12px !important;
   }

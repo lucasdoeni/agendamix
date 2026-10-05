@@ -88,7 +88,7 @@ export default function DashboardHome() {
   };
 
   return (
-    <div>
+    <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
       {/* Page Header */}
       <div style={{ marginBottom: '28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div>
@@ -163,7 +163,10 @@ export default function DashboardHome() {
         position: 'relative',
         borderRadius: '16px',
         overflow: 'hidden',
-        marginBottom: '28px',
+        marginBottom: '24px',
+        width: '100%',
+        maxWidth: '100%',
+        boxSizing: 'border-box',
         minHeight: '130px',
         backgroundColor: '#1e3a8a',
         backgroundImage: currentProData.coverImage ? `url(${currentProData.coverImage})` : 'var(--grad-primary)',

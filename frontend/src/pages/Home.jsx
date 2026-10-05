@@ -13,7 +13,8 @@ import {
   Calendar, 
   Clock, 
   ShieldCheck,
-  TrendingUp
+  TrendingUp,
+  LogIn
 } from 'lucide-react';
 import { CATEGORIES } from '../data/mockData';
 import { storageService } from '../services/storageService';
@@ -153,11 +154,21 @@ export default function Home() {
             </Button>
           </form>
 
-          {/* Quick CTA Links */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
+          {/* Quick CTA Links - Botão Entrar e Acesso Rápido */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <Link to="/login">
+              <Button variant="primary" size="md" icon={LogIn} style={{ fontWeight: 700, padding: '10px 22px' }}>
+                Entrar na Minha Conta
+              </Button>
+            </Link>
+            <Link to="/cadastro-cliente">
+              <Button variant="outline" size="md" style={{ fontWeight: 600 }}>
+                Criar Conta de Cliente
+              </Button>
+            </Link>
             <Link to="/cadastro-profissional">
-              <Button variant="outline" size="sm" icon={TrendingUp}>
-                Você é profissional? Comece a receber agendamentos
+              <Button variant="ghost" size="md" icon={TrendingUp} style={{ color: '#2563eb', fontWeight: 600 }}>
+                Sou Profissional (Cadastre-se)
               </Button>
             </Link>
           </div>

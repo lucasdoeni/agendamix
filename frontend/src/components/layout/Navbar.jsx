@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Calendar, User, Menu, X, Sparkles, LogOut, ChevronDown, Briefcase } from 'lucide-react';
+import { Calendar, User, Menu, X, Sparkles, LogOut, ChevronDown, Briefcase, LogIn } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../common/Button';
 
@@ -247,21 +247,32 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile Hamburger Button */}
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '8px',
-            borderRadius: '8px',
-            color: '#1e293b'
-          }}
-          className="mobile-toggle"
-        >
-          {mobileMenuOpen ? <X size={26} /> : <Menu size={26} />}
-        </button>
+        {/* Mobile Header Actions (Visível apenas em smartphones/telas < 768px) */}
+        <div className="mobile-actions" style={{ display: 'none', alignItems: 'center', gap: '8px' }}>
+          <Link to="/login">
+            <Button variant="primary" size="sm" icon={LogIn} style={{ padding: '6px 12px', fontSize: '0.825rem' }}>
+              Entrar
+            </Button>
+          </Link>
+
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '7px',
+              borderRadius: '8px',
+              border: '1px solid #cbd5e1',
+              backgroundColor: '#ffffff',
+              color: '#1e293b',
+              cursor: 'pointer'
+            }}
+            aria-label="Abrir Menu de Navegação"
+          >
+            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Drawer Menu */}
@@ -295,26 +306,61 @@ export default function Navbar() {
           >
             Meus Agendamentos
           </Link>
-          <div style={{ height: '1px', background: '#f1f5f9' }} />
-          {isPro ? (
-            <Link
-              to="/painel-profissional"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <Button fullWidth variant="primary" icon={Briefcase}>
-                Painel do Profissional
+          
+          <div style={{ height: '1px', background: '#f1f5f9', margin: '4px 0' }} />
+
+          {currentUser ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ padding: '8px 12px', borderRadius: '8px', background: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                <span style={{ fontSize: '0.75rem', color: '#64748b', display: 'block' }}>Conectado como:</span>
+                <strong style={{ fontSize: '0.9rem', color: '#0f172a' }}>{currentUser.name}</strong>
+              </div>
+
+              {isPro && (
+                <Link
+                  to="/painel-profissional"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Button fullWidth variant="primary" icon={Briefcase}>
+                    Acessar Painel do Profissional
+                  </Button>
+                </Link>
+              )}
+
+              <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                <Button fullWidth variant="outline" icon={LogIn}>
+                  Trocar de Conta / Entrar
+                </Button>
+              </Link>
+
+              <Button
+                fullWidth
+                variant="outline"
+                style={{ color: '#ef4444', borderColor: '#fca5a5' }}
+                icon={LogOut}
+                onClick={() => {
+                  logout();
+                  setMobileMenuOpen(false);
+                }}
+              >
+                Sair da Conta
               </Button>
-            </Link>
+            </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                <Button fullWidth variant="primary" icon={LogIn}>
+                  Entrar no AgendaMix
+                </Button>
+              </Link>
               <Link to="/cadastro-cliente" onClick={() => setMobileMenuOpen(false)}>
                 <Button fullWidth variant="outline">
                   Cadastrar-se como Cliente
                 </Button>
               </Link>
-              <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-                <Button fullWidth variant="primary">
-                  Entrar
+              <Link to="/cadastro-profissional" onClick={() => setMobileMenuOpen(false)}>
+                <Button fullWidth variant="ghost">
+                  Cadastrar como Profissional
                 </Button>
               </Link>
             </div>
@@ -327,7 +373,12 @@ export default function Navbar() {
         @media (min-width: 768px) {
           .desktop-nav { display: flex !important; }
           .desktop-actions { display: flex !important; }
-          .mobile-toggle { display: none !important; }
+          .mobile-actions { display: none !important; }
+        }
+        @media (max-width: 767px) {
+          .desktop-nav { display: none !important; }
+          .desktop-actions { display: none !important; }
+          .mobile-actions { display: flex !important; }
         }
       `}</style>
     </header>

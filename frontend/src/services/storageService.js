@@ -1,12 +1,38 @@
 import { INITIAL_PROFESSIONALS, INITIAL_CLIENTS, INITIAL_BOOKINGS } from '../data/mockData';
 
-const PROS_KEY = 'agendamix_professionals_v1';
-const CLIENTS_KEY = 'agendamix_clients_v1';
-const BOOKINGS_KEY = 'agendamix_bookings_v1';
+const PROS_KEY = 'agendamix_pros_v3';
+const CLIENTS_KEY = 'agendamix_clients_v3';
+const BOOKINGS_KEY = 'agendamix_bookings_v3';
 const API_URL = 'http://localhost:5000/api';
 
-// Sincroniza dados com o backend MySQL na inicialização
+// Mescla listas garantindo que todos os itens da base estejam sempre presentes
+function mergeListById(existingList, baseList) {
+  const map = new Map();
+  // 1. Prioriza a base com todos os dados do banco/seed
+  (baseList || []).forEach(item => {
+    if (item && item.id) map.set(item.id, item);
+  });
+  // 2. Mescla com os itens existentes criados/alterados pelo usuário
+  (existingList || []).forEach(item => {
+    if (item && item.id) {
+      const existing = map.get(item.id) || {};
+      map.set(item.id, { ...existing, ...item });
+    }
+  });
+  return Array.from(map.values());
+}
+
+// Sincroniza dados com o backend MySQL ou com o dump estático na inicialização
 export async function initStorage() {
+  // Limpa chaves legadas antigas
+  try {
+    localStorage.removeItem('agendamix_professionals_v1');
+    localStorage.removeItem('agendamix_clients_v1');
+    localStorage.removeItem('agendamix_bookings_v1');
+    localStorage.removeItem('agendamix_pros_v2');
+  } catch {}
+
+  // 1. Tenta carregar do backend local MySQL se disponível
   try {
     const res = await fetch(`${API_URL}/professionals`);
     if (res.ok) {
@@ -15,28 +41,47 @@ export async function initStorage() {
         localStorage.setItem(PROS_KEY, JSON.stringify(prosFromDb));
       }
     }
-  } catch {
-    // Se o backend estiver indisponível no momento, usa cache local ou dados padrão
-    if (!localStorage.getItem(PROS_KEY)) {
-      localStorage.setItem(PROS_KEY, JSON.stringify(INITIAL_PROFESSIONALS));
+  } catch {}
+
+  // 2. Tenta carregar dump estático do MySQL (para GitHub Pages / offline)
+  try {
+    const dumpRes = await fetch('./data/api-dump.json');
+    if (dumpRes.ok) {
+      const dumpData = await dumpRes.json();
+      if (dumpData.professionals && Array.isArray(dumpData.professionals)) {
+        const merged = mergeListById(storageService.getProfessionals(), dumpData.professionals);
+        localStorage.setItem(PROS_KEY, JSON.stringify(merged));
+      }
+      if (dumpData.clients && Array.isArray(dumpData.clients)) {
+        const mergedClients = mergeListById(storageService.getClients(), dumpData.clients);
+        localStorage.setItem(CLIENTS_KEY, JSON.stringify(mergedClients));
+      }
+      if (dumpData.bookings && Array.isArray(dumpData.bookings)) {
+        const mergedBookings = mergeListById(storageService.getBookings(), dumpData.bookings);
+        localStorage.setItem(BOOKINGS_KEY, JSON.stringify(mergedBookings));
+      }
+      return;
     }
-  }
+  } catch {}
 
-  if (!localStorage.getItem(CLIENTS_KEY)) {
-    localStorage.setItem(CLIENTS_KEY, JSON.stringify(INITIAL_CLIENTS || []));
-  }
+  // 3. Fallback com dados embutidos
+  const currentPros = storageService.getProfessionals();
+  localStorage.setItem(PROS_KEY, JSON.stringify(mergeListById(currentPros, INITIAL_PROFESSIONALS)));
 
-  if (!localStorage.getItem(BOOKINGS_KEY)) {
-    localStorage.setItem(BOOKINGS_KEY, JSON.stringify(INITIAL_BOOKINGS));
-  }
+  const currentClients = storageService.getClients();
+  localStorage.setItem(CLIENTS_KEY, JSON.stringify(mergeListById(currentClients, INITIAL_CLIENTS)));
+
+  const currentBookings = storageService.getBookings();
+  localStorage.setItem(BOOKINGS_KEY, JSON.stringify(mergeListById(currentBookings, INITIAL_BOOKINGS)));
 }
 
 export const storageService = {
   // PROFISSIONAIS
   getProfessionals() {
     try {
-      const data = localStorage.getItem(PROS_KEY);
-      return data ? JSON.parse(data) : INITIAL_PROFESSIONALS;
+      const raw = localStorage.getItem(PROS_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return mergeListById(parsed, INITIAL_PROFESSIONALS);
     } catch {
       return INITIAL_PROFESSIONALS;
     }
@@ -316,10 +361,11 @@ export const storageService = {
   // AGENDAMENTOS
   getBookings() {
     try {
-      const data = localStorage.getItem(BOOKINGS_KEY);
-      return data ? JSON.parse(data) : INITIAL_BOOKINGS;
+      const raw = localStorage.getItem(BOOKINGS_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return mergeListById(parsed, INITIAL_BOOKINGS || []);
     } catch {
-      return INITIAL_BOOKINGS;
+      return INITIAL_BOOKINGS || [];
     }
   },
 
@@ -414,8 +460,9 @@ export const storageService = {
   // CLIENTES
   getClients() {
     try {
-      const data = localStorage.getItem(CLIENTS_KEY);
-      return data ? JSON.parse(data) : (INITIAL_CLIENTS || []);
+      const raw = localStorage.getItem(CLIENTS_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return mergeListById(parsed, INITIAL_CLIENTS || []);
     } catch {
       return INITIAL_CLIENTS || [];
     }
@@ -440,11 +487,30 @@ export const storageService = {
           isOnline: true
         };
       }
-    } catch (err) {
-      console.warn('Backend MySQL offline ou indisponível (usando cache local/demo):', err.message);
-    }
+    } catch {}
 
-    // 2. Fallback automático seguro (modo offline / GitHub Pages)
+    // 2. Se backend offline (GitHub Pages / demo), carrega do dump estático oficial do MySQL
+    try {
+      const dumpRes = await fetch('./data/api-dump.json');
+      if (dumpRes.ok) {
+        const dump = await dumpRes.json();
+        if (dump.professionals && Array.isArray(dump.professionals)) {
+          const mergedPros = mergeListById(storageService.getProfessionals(), dump.professionals);
+          localStorage.setItem(PROS_KEY, JSON.stringify(mergedPros));
+        }
+        if (dump.clients && Array.isArray(dump.clients)) {
+          const mergedClients = mergeListById(storageService.getClients(), dump.clients);
+          localStorage.setItem(CLIENTS_KEY, JSON.stringify(mergedClients));
+        }
+        return {
+          professionals: dump.professionals || [],
+          clients: dump.clients || [],
+          isOnline: false
+        };
+      }
+    } catch {}
+
+    // 3. Fallback automático com mesclagem dos dados locais
     const pros = this.getProfessionals();
     const clients = this.getClients();
     const bookings = this.getBookings();
@@ -657,6 +723,24 @@ export const storageService = {
       return { success: true, message: 'Formas de pagamento atualizadas com sucesso!' };
     }
     return { success: false, message: 'Profissional não encontrado.' };
+  },
+
+  async syncFromMySQLSeed() {
+    try {
+      const dumpRes = await fetch('./data/api-dump.json');
+      if (dumpRes.ok) {
+        const dump = await dumpRes.json();
+        if (dump.professionals) localStorage.setItem(PROS_KEY, JSON.stringify(dump.professionals));
+        if (dump.clients) localStorage.setItem(CLIENTS_KEY, JSON.stringify(dump.clients));
+        if (dump.bookings) localStorage.setItem(BOOKINGS_KEY, JSON.stringify(dump.bookings));
+        return { success: true, countPros: dump.professionals.length, countClients: dump.clients.length };
+      }
+    } catch {}
+
+    localStorage.setItem(PROS_KEY, JSON.stringify(INITIAL_PROFESSIONALS));
+    localStorage.setItem(CLIENTS_KEY, JSON.stringify(INITIAL_CLIENTS || []));
+    localStorage.setItem(BOOKINGS_KEY, JSON.stringify(INITIAL_BOOKINGS));
+    return { success: true, countPros: INITIAL_PROFESSIONALS.length, countClients: (INITIAL_CLIENTS || []).length };
   },
 
   resetToDefault() {

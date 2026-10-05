@@ -409,6 +409,20 @@ export default function AdminMaintenance() {
     }
   };
 
+  const handleForceSyncSeed = async () => {
+    setLoading(true);
+    try {
+      const res = await storageService.syncFromMySQLSeed();
+      addToast(`Dados sincronizados com sucesso! ${res.countPros} profissionais e ${res.countClients} clientes do MySQL carregados.`, 'success');
+      await fetchAdminData();
+    } catch (err) {
+      console.error(err);
+      addToast('Erro ao sincronizar dados', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogoutAdmin = () => {
     sessionStorage.removeItem('agendamix_admin_auth');
     addToast('Sessão administrativa finalizada', 'info');
@@ -480,9 +494,31 @@ export default function AdminMaintenance() {
               + Novo Usuário
             </Button>
 
+            {/* Botão Sincronizar MySQL */}
+            <button
+              onClick={handleForceSyncSeed}
+              title="Carregar todos os profissionais e clientes de exemplo do MySQL"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 14px',
+                borderRadius: '10px',
+                backgroundColor: 'rgba(37, 99, 235, 0.25)',
+                color: '#93c5fd',
+                border: '1px solid rgba(147, 197, 253, 0.4)',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              <Database size={15} />
+              <span>Sincronizar MySQL</span>
+            </button>
+
             <button
               onClick={fetchAdminData}
-              title="Atualizar dados do MySQL"
+              title="Atualizar dados"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',

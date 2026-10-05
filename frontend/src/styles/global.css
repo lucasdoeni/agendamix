@@ -289,6 +289,40 @@ img {
   gap: 14px;
 }
 
+/* Grid de Atendimentos do Painel Pro */
+.dashboard-grid-bookings {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 1150px) {
+  .dashboard-grid-bookings {
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+}
+
+.dashboard-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+  .dashboard-kpi-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+}
+
 /* Ajustes para telas menores que 768px (Tablets e Smartphones) */
 @media (max-width: 768px) {
   .container {

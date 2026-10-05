@@ -226,7 +226,7 @@ export default function DashboardLayout({ children }) {
       </aside>
 
       {/* Main Content Area */}
-      <main style={{ flex: 1, padding: '32px 24px', maxWidth: '100%', overflowX: 'hidden' }}>
+      <main className="dashboard-main-area" style={{ flex: 1, padding: '32px 24px', maxWidth: '100%', overflowX: 'hidden', boxSizing: 'border-box' }}>
         {/* Mobile Pro Selector Bar */}
         <div className="mobile-pro-bar" style={{
           display: 'none',
@@ -328,6 +328,11 @@ export default function DashboardLayout({ children }) {
         @media (max-width: 900px) {
           .dashboard-sidebar-desktop { display: none !important; }
           .mobile-pro-bar { display: flex !important; }
+        }
+        @media (max-width: 640px) {
+          .dashboard-main-area {
+            padding: 16px 12px !important;
+          }
         }
       `}</style>
     </div>

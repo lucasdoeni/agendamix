@@ -241,12 +241,7 @@ export default function DashboardHome() {
       </div>
 
       {/* KPI Stat Cards */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-        gap: '16px',
-        marginBottom: '32px'
-      }}>
+      <div className="dashboard-kpi-grid">
         {/* Atendimentos Hoje */}
         <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <div style={{
@@ -257,7 +252,8 @@ export default function DashboardHome() {
             color: '#2563eb',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            flexShrink: 0
           }}>
             <Calendar size={24} />
           </div>
@@ -281,7 +277,8 @@ export default function DashboardHome() {
             color: '#7c3aed',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            flexShrink: 0
           }}>
             <Users size={24} />
           </div>
@@ -305,7 +302,8 @@ export default function DashboardHome() {
             color: '#10b981',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            flexShrink: 0
           }}>
             <DollarSign size={24} />
           </div>
@@ -329,7 +327,8 @@ export default function DashboardHome() {
             color: '#f59e0b',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            flexShrink: 0
           }}>
             <Sparkles size={24} />
           </div>
@@ -344,16 +343,16 @@ export default function DashboardHome() {
         </div>
       </div>
 
-      {/* Main Grid: Atendimentos de Hoje e Próximos */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}>
+      {/* Main Grid: Atendimentos de Hoje e Próximos na Semana */}
+      <div className="dashboard-grid-bookings">
         {/* Atendimentos do Dia */}
-        <div className="card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <div className="card" style={{ width: '100%', boxSizing: 'border-box' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '10px' }}>
             <div>
-              <h3 style={{ fontSize: '1.2rem', color: '#0f172a' }}>
+              <h3 style={{ fontSize: '1.2rem', color: '#0f172a', fontWeight: 700 }}>
                 Atendimentos de Hoje
               </h3>
-              <p style={{ fontSize: '0.85rem', color: '#64748b', margin: 0 }}>
+              <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '2px 0 0' }}>
                 {todayBookings.length} clientes agendados para a data de hoje
               </p>
             </div>
@@ -361,11 +360,11 @@ export default function DashboardHome() {
           </div>
 
           {todayBookings.length === 0 ? (
-            <div style={{ padding: '32px', textAlign: 'center', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px dashed #cbd5e1' }}>
+            <div style={{ padding: '32px 16px', textAlign: 'center', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px dashed #cbd5e1' }}>
               <Calendar size={32} color="#94a3b8" style={{ margin: '0 auto 12px' }} />
               <h4 style={{ fontSize: '1rem', color: '#334155' }}>Nenhum atendimento marcado para hoje</h4>
-              <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '4px 0 16px' }}>
-                Os agendamentos feitos pelos clientes através da sua página pública aparecerão aqui automaticamente.
+              <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '4px 0 0', lineHeight: 1.45 }}>
+                Os agendamentos feitos pelos clientes aparecerão aqui automaticamente.
               </p>
             </div>
           ) : (
@@ -374,53 +373,80 @@ export default function DashboardHome() {
                 <div
                   key={bkg.id}
                   style={{
-                    padding: '16px',
+                    padding: '14px 16px',
                     borderRadius: '12px',
                     border: '1px solid #e2e8f0',
                     backgroundColor: bkg.status === 'cancelled' ? '#fef2f2' : '#ffffff',
                     display: 'flex',
-                    flexWrap: 'wrap',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: '12px'
+                    flexDirection: 'column',
+                    gap: '12px',
+                    width: '100%',
+                    boxSizing: 'border-box'
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{
-                      padding: '8px 12px',
-                      borderRadius: '8px',
-                      backgroundColor: '#eff6ff',
-                      color: '#2563eb',
-                      fontWeight: 800,
-                      fontSize: '1rem'
-                    }}>
-                      {bkg.time}
-                    </div>
+                  {/* Top Row: Horário, Nome e Preço */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{
+                        padding: '6px 12px',
+                        borderRadius: '8px',
+                        backgroundColor: '#eff6ff',
+                        color: '#2563eb',
+                        fontWeight: 800,
+                        fontSize: '0.95rem',
+                        flexShrink: 0
+                      }}>
+                        {bkg.time}
+                      </div>
 
-                    <div>
-                      <h4 style={{ fontSize: '1rem', color: '#0f172a', marginBottom: '2px' }}>
-                        {bkg.clientName}
-                      </h4>
-                      <p style={{ fontSize: '0.85rem', color: '#64748b', margin: 0 }}>
-                        {bkg.serviceName} • <strong>R$ {Number(bkg.price).toFixed(2).replace('.', ',')}</strong> ({bkg.duration} min)
-                      </p>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px', fontSize: '0.8rem', color: '#64748b' }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <Phone size={13} color="#10b981" /> {bkg.clientPhone}
-                        </span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <Mail size={13} color="#2563eb" /> {bkg.clientEmail}
+                      <div>
+                        <h4 style={{ fontSize: '0.95rem', color: '#0f172a', margin: 0, fontWeight: 700 }}>
+                          {bkg.clientName}
+                        </h4>
+                        <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                          {bkg.serviceName} ({bkg.duration} min)
                         </span>
                       </div>
                     </div>
+
+                    <div style={{ textAlign: 'right' }}>
+                      <strong style={{ fontSize: '1rem', color: '#10b981' }}>
+                        R$ {Number(bkg.price).toFixed(2).replace('.', ',')}
+                      </strong>
+                    </div>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {/* Middle Row: Contatos */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '12px',
+                    fontSize: '0.8rem',
+                    color: '#64748b',
+                    paddingTop: '6px',
+                    borderTop: '1px solid #f1f5f9'
+                  }}>
+                    {bkg.clientPhone && (
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Phone size={13} color="#10b981" /> {bkg.clientPhone}
+                      </span>
+                    )}
+                    {bkg.clientEmail && (
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px', wordBreak: 'break-all' }}>
+                        <Mail size={13} color="#2563eb" /> {bkg.clientEmail}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Bottom Row: Ações */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px', flexWrap: 'wrap' }}>
                     {bkg.status === 'confirmed' && (
-                      <>
+                      <div style={{ display: 'flex', gap: '8px', width: '100%' }} className="mobile-stack">
                         <Button
                           size="sm"
                           variant="secondary"
+                          fullWidth
                           icon={CheckCircle2}
                           onClick={() => handleUpdateStatus(bkg.id, 'completed')}
                         >
@@ -429,13 +455,14 @@ export default function DashboardHome() {
                         <Button
                           size="sm"
                           variant="outline"
+                          fullWidth
                           style={{ color: '#ef4444', borderColor: '#fca5a5' }}
                           icon={XCircle}
                           onClick={() => handleUpdateStatus(bkg.id, 'cancelled')}
                         >
                           Cancelar
                         </Button>
-                      </>
+                      </div>
                     )}
 
                     {bkg.status === 'completed' && <Badge variant="success">Concluído</Badge>}
@@ -448,51 +475,66 @@ export default function DashboardHome() {
         </div>
 
         {/* Todos os Próximos Atendimentos */}
-        <div className="card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h3 style={{ fontSize: '1.2rem', color: '#0f172a' }}>
-              Próximos Atendimentos na Semana
-            </h3>
+        <div className="card" style={{ width: '100%', boxSizing: 'border-box' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '10px' }}>
+            <div>
+              <h3 style={{ fontSize: '1.2rem', color: '#0f172a', fontWeight: 700 }}>
+                Próximos Atendimentos na Semana
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '2px 0 0' }}>
+                Visão geral dos agendamentos confirmados
+              </p>
+            </div>
             <span style={{ fontSize: '0.85rem', color: '#2563eb', fontWeight: 600 }}>
               {activeBookings.length} agendamento(s)
             </span>
           </div>
 
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid #e2e8f0', textAlign: 'left', color: '#64748b' }}>
-                  <th style={{ padding: '10px 8px' }}>Data / Hora</th>
-                  <th style={{ padding: '10px 8px' }}>Cliente</th>
-                  <th style={{ padding: '10px 8px' }}>Serviço</th>
-                  <th style={{ padding: '10px 8px' }}>Valor</th>
-                  <th style={{ padding: '10px 8px' }}>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {activeBookings.slice(0, 6).map(b => (
-                  <tr key={b.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={{ padding: '12px 8px', fontWeight: 600, color: '#0f172a' }}>
-                      {b.date} às {b.time}
-                    </td>
-                    <td style={{ padding: '12px 8px' }}>
-                      <div>{b.clientName}</div>
-                      <small style={{ color: '#64748b' }}>{b.clientPhone}</small>
-                    </td>
-                    <td style={{ padding: '12px 8px', color: '#334155' }}>
-                      {b.serviceName}
-                    </td>
-                    <td style={{ padding: '12px 8px', fontWeight: 700, color: '#10b981' }}>
-                      R$ {Number(b.price).toFixed(2).replace('.', ',')}
-                    </td>
-                    <td style={{ padding: '12px 8px' }}>
-                      <Badge variant="success">Confirmado</Badge>
-                    </td>
+          {activeBookings.length === 0 ? (
+            <div style={{ padding: '32px 16px', textAlign: 'center', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px dashed #cbd5e1' }}>
+              <Calendar size={32} color="#94a3b8" style={{ margin: '0 auto 12px' }} />
+              <h4 style={{ fontSize: '1rem', color: '#334155' }}>Nenhum próximo atendimento agendado</h4>
+              <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '4px 0 0', lineHeight: 1.45 }}>
+                Novos agendamentos feitos pelos seus clientes aparecerão aqui automaticamente.
+              </p>
+            </div>
+          ) : (
+            <div className="table-responsive" style={{ margin: 0 }}>
+              <table style={{ width: '100%', minWidth: '500px', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid #e2e8f0', textAlign: 'left', color: '#64748b', backgroundColor: '#f8fafc' }}>
+                    <th style={{ padding: '10px 12px' }}>Data / Hora</th>
+                    <th style={{ padding: '10px 12px' }}>Cliente</th>
+                    <th style={{ padding: '10px 12px' }}>Serviço</th>
+                    <th style={{ padding: '10px 12px' }}>Valor</th>
+                    <th style={{ padding: '10px 12px' }}>Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {activeBookings.slice(0, 6).map(b => (
+                    <tr key={b.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                      <td style={{ padding: '12px', fontWeight: 600, color: '#0f172a', whiteSpace: 'nowrap' }}>
+                        {b.date} às {b.time}
+                      </td>
+                      <td style={{ padding: '12px' }}>
+                        <div style={{ fontWeight: 600, color: '#1e293b' }}>{b.clientName}</div>
+                        <small style={{ color: '#64748b' }}>{b.clientPhone}</small>
+                      </td>
+                      <td style={{ padding: '12px', color: '#334155' }}>
+                        {b.serviceName}
+                      </td>
+                      <td style={{ padding: '12px', fontWeight: 700, color: '#10b981', whiteSpace: 'nowrap' }}>
+                        R$ {Number(b.price).toFixed(2).replace('.', ',')}
+                      </td>
+                      <td style={{ padding: '12px' }}>
+                        <Badge variant="success">Confirmado</Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </div>

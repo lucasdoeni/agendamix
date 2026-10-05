@@ -4,6 +4,8 @@ import { User, Mail, Phone, Lock, ArrowRight, CheckCircle2, ShieldCheck } from '
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import Button from '../components/common/Button';
+import { storageService } from '../services/storageService';
+import { API_URL } from '../services/apiConfig';
 
 export default function ClientRegister() {
   const navigate = useNavigate();
@@ -45,31 +47,68 @@ export default function ClientRegister() {
 
     setLoading(true);
 
+    if (API_URL) {
+      try {
+        const res = await fetch(`${API_URL}/auth/register-client`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            password: formData.password
+          })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          addToast('Cadastro realizado com sucesso!', 'success');
+          setCurrentUser(data.user);
+          navigate('/meus-agendamentos');
+          return;
+        } else {
+          addToast(data.error || 'Erro ao realizar cadastro de cliente', 'error');
+          setLoading(false);
+          return;
+        }
+      } catch (err) {}
+    }
+
+    // Fallback local seguro (GitHub Pages / offline)
     try {
-      const res = await fetch('http://localhost:5000/api/auth/register-client', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          password: formData.password
-        })
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        addToast('Cadastro realizado com sucesso!', 'success');
-        // Define o usuário logado no AuthContext
-        setCurrentUser(data.user);
-        navigate('/meus-agendamentos');
-      } else {
-        addToast(data.error || 'Erro ao realizar cadastro de cliente', 'error');
+      const clients = storageService.getClients();
+      const cleanEmail = formData.email.trim().toLowerCase();
+      const existing = clients.find(c => (c.email || '').trim().toLowerCase() === cleanEmail);
+      if (existing) {
+        addToast('Este e-mail já está cadastrado como cliente.', 'error');
+        setLoading(false);
+        return;
       }
+
+      const newClient = {
+        id: 'cli-' + Date.now(),
+        name: formData.name.trim(),
+        email: cleanEmail,
+        phone: formData.phone.trim(),
+        password: formData.password
+      };
+      clients.unshift(newClient);
+      localStorage.setItem('agendamix_clients_v3', JSON.stringify(clients));
+
+      const loggedUser = {
+        type: 'client',
+        clientId: newClient.id,
+        id: newClient.id,
+        name: newClient.name,
+        email: newClient.email,
+        phone: newClient.phone
+      };
+      setCurrentUser(loggedUser);
+      addToast('Cadastro realizado com sucesso!', 'success');
+      navigate('/meus-agendamentos');
     } catch (err) {
-      console.error(err);
-      addToast('Erro ao conectar ao servidor MySQL', 'error');
+      addToast('Erro ao concluir cadastro: ' + err.message, 'error');
     } finally {
       setLoading(false);
     }

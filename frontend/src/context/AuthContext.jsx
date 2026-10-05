@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { storageService } from '../services/storageService';
+import { API_URL } from '../services/apiConfig';
 
 const AuthContext = createContext();
 const AUTH_USER_KEY = 'agendamix_auth_user_v1';
-const API_URL = 'http://localhost:5000/api';
 
 export function AuthProvider({ children }) {
   // Inicializa deslogado (sem usuário de exemplo pré-carregado)
@@ -27,22 +27,22 @@ export function AuthProvider({ children }) {
 
   // Login de demonstração como profissional por ID
   const loginAsPro = async (proId) => {
-    try {
-      const res = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ proId, role: 'professional' })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setCurrentUser(data.user);
-        return true;
-      }
-    } catch (err) {
-      console.warn('Erro ao conectar ao backend para login:', err.message);
+    if (API_URL) {
+      try {
+        const res = await fetch(`${API_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ proId, role: 'professional' })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setCurrentUser(data.user);
+          return true;
+        }
+      } catch (err) {}
     }
 
-    // Fallback local se o backend estiver inacessível
+    // Fallback local se o backend estiver inacessível ou em produção
     const pro = storageService.getProfessionalById(proId);
     if (!pro) return false;
 
@@ -63,56 +63,56 @@ export function AuthProvider({ children }) {
     const cleanEmail = (email || '').trim().toLowerCase();
     let apiError = null;
 
-    try {
-      const res = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: cleanEmail, password, role })
-      });
+    if (API_URL) {
+      try {
+        const res = await fetch(`${API_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: cleanEmail, password, role })
+        });
 
-      const data = await res.json();
+        const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.error || 'Credenciais inválidas. Verifique seu e-mail e senha.');
-      }
-
-      setCurrentUser(data.user);
-      localStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.user));
-
-      // Sincroniza profissional logado no cache local de storage
-      if (data.user?.type === 'professional') {
-        const existingPros = storageService.getProfessionals();
-        const targetId = data.user.proId || data.user.id;
-        const found = existingPros.find(p => p.id === targetId);
-        if (found) {
-          Object.assign(found, data.user);
-        } else {
-          existingPros.unshift({
-            id: targetId,
-            name: data.user.name,
-            commercialName: data.user.commercialName,
-            email: data.user.email,
-            avatar: data.user.avatar,
-            coverImage: data.user.coverImage,
-            category: data.user.category || 'barbearia',
-            phone: data.user.phone,
-            city: data.user.city || 'São Paulo',
-            state: data.user.state || 'SP',
-            rating: 5.0,
-            reviewCount: 1
-          });
+        if (!res.ok) {
+          throw new Error(data.error || 'Credenciais inválidas. Verifique seu e-mail e senha.');
         }
-        localStorage.setItem('agendamix_pros_v3', JSON.stringify(existingPros));
-      }
 
-      return data.user;
-    } catch (err) {
-      apiError = err;
-      // Se foi erro de credencial emitido pelo backend, relança diretamente
-      if (err.message && !err.message.includes('Failed to fetch') && !err.message.includes('NetworkError')) {
-        throw err;
+        setCurrentUser(data.user);
+        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.user));
+
+        // Sincroniza profissional logado no cache local de storage
+        if (data.user?.type === 'professional') {
+          const existingPros = storageService.getProfessionals();
+          const targetId = data.user.proId || data.user.id;
+          const found = existingPros.find(p => p.id === targetId);
+          if (found) {
+            Object.assign(found, data.user);
+          } else {
+            existingPros.unshift({
+              id: targetId,
+              name: data.user.name,
+              commercialName: data.user.commercialName,
+              email: data.user.email,
+              avatar: data.user.avatar,
+              coverImage: data.user.coverImage,
+              category: data.user.category || 'barbearia',
+              phone: data.user.phone,
+              city: data.user.city || 'São Paulo',
+              state: data.user.state || 'SP',
+              rating: 5.0,
+              reviewCount: 1
+            });
+          }
+          localStorage.setItem('agendamix_pros_v3', JSON.stringify(existingPros));
+        }
+
+        return data.user;
+      } catch (err) {
+        apiError = err;
+        if (err.message && !err.message.includes('Failed to fetch') && !err.message.includes('NetworkError')) {
+          throw err;
+        }
       }
-      console.warn('Backend inacessível, tentando autenticação local/offline:', err.message);
     }
 
     // Fallback local (GitHub Pages ou servidor offline)

@@ -4,6 +4,7 @@ import { Calendar, Heart, ShieldCheck, Clock, Award, Lock, AlertCircle } from 'l
 import { CATEGORIES } from '../../data/mockData';
 import Button from '../common/Button';
 import Modal from '../common/Modal';
+import { API_URL } from '../../services/apiConfig';
 
 export default function Footer() {
   const [adminModalOpen, setAdminModalOpen] = useState(false);
@@ -21,35 +22,40 @@ export default function Footer() {
       return;
     }
     setLoading(true);
-    try {
-      const res = await fetch('http://localhost:5000/api/admin/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: username.trim(), password })
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        sessionStorage.setItem('agendamix_admin_auth', JSON.stringify(data.user));
-        setAdminModalOpen(false);
-        setUsername('');
-        setPassword('');
-        navigate('/admin/manutencao');
-      } else {
-        setErrorMsg('Credenciais inválidas.');
-      }
-    } catch {
-      if (username.trim() === 'admin' && password === 'admin') {
-        sessionStorage.setItem('agendamix_admin_auth', JSON.stringify({ role: 'admin', username: 'admin' }));
-        setAdminModalOpen(false);
-        setUsername('');
-        setPassword('');
-        navigate('/admin/manutencao');
-      } else {
-        setErrorMsg('Credenciais inválidas.');
-      }
-    } finally {
-      setLoading(false);
+
+    if (API_URL) {
+      try {
+        const res = await fetch(`${API_URL}/admin/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: username.trim(), password })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          sessionStorage.setItem('agendamix_admin_auth', JSON.stringify(data.user));
+          setAdminModalOpen(false);
+          setUsername('');
+          setPassword('');
+          navigate('/admin/manutencao');
+          return;
+        } else {
+          setErrorMsg('Credenciais inválidas.');
+          setLoading(false);
+          return;
+        }
+      } catch {}
     }
+
+    if (username.trim() === 'admin' && password === 'admin') {
+      sessionStorage.setItem('agendamix_admin_auth', JSON.stringify({ role: 'admin', username: 'admin' }));
+      setAdminModalOpen(false);
+      setUsername('');
+      setPassword('');
+      navigate('/admin/manutencao');
+    } else {
+      setErrorMsg('Credenciais inválidas.');
+    }
+    setLoading(false);
   };
   return (
     <footer style={{

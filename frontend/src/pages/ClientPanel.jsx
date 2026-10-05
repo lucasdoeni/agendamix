@@ -18,6 +18,7 @@ import {
   LogOut
 } from 'lucide-react';
 import { storageService } from '../services/storageService';
+import { API_URL } from '../services/apiConfig';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import Badge from '../components/common/Badge';
@@ -101,36 +102,72 @@ export default function ClientPanel() {
 
     setSavingProfile(true);
 
+    if (API_URL) {
+      try {
+        const res = await fetch(`${API_URL}/auth/client-profile`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: currentUser?.id,
+            currentEmail: currentUser?.email,
+            name: profileForm.name,
+            email: profileForm.email,
+            phone: profileForm.phone,
+            password: profileForm.password
+          })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          addToast('Seus dados foram atualizados com sucesso!', 'success');
+          setCurrentUser(data.user);
+          setProfileForm(prev => ({
+            ...prev,
+            password: '',
+            confirmPassword: ''
+          }));
+          setSavingProfile(false);
+          return;
+        } else {
+          addToast(data.error || 'Erro ao atualizar dados', 'error');
+          setSavingProfile(false);
+          return;
+        }
+      } catch (err) {}
+    }
+
+    // Fallback local seguro (GitHub Pages / offline)
     try {
-      const res = await fetch('http://localhost:5000/api/auth/client-profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: currentUser?.id,
-          currentEmail: currentUser?.email,
+      const updatedUser = {
+        ...currentUser,
+        name: profileForm.name,
+        email: profileForm.email,
+        phone: profileForm.phone
+      };
+      setCurrentUser(updatedUser);
+
+      const clients = storageService.getClients();
+      const idx = clients.findIndex(c => c.id === currentUser?.id || c.email === currentUser?.email);
+      if (idx !== -1) {
+        clients[idx] = {
+          ...clients[idx],
           name: profileForm.name,
           email: profileForm.email,
           phone: profileForm.phone,
-          password: profileForm.password
-        })
-      });
-
-      const data = await res.json();
-
-      if (res.ok && data.success) {
-        addToast('Seus dados foram atualizados com sucesso!', 'success');
-        setCurrentUser(data.user);
-        setProfileForm(prev => ({
-          ...prev,
-          password: '',
-          confirmPassword: ''
-        }));
-      } else {
-        addToast(data.error || 'Erro ao atualizar dados', 'error');
+          ...(profileForm.password ? { password: profileForm.password } : {})
+        };
+        localStorage.setItem('agendamix_clients_v3', JSON.stringify(clients));
       }
+
+      addToast('Seus dados foram atualizados com sucesso!', 'success');
+      setProfileForm(prev => ({
+        ...prev,
+        password: '',
+        confirmPassword: ''
+      }));
     } catch (err) {
-      console.error(err);
-      addToast('Erro ao comunicar com o servidor MySQL', 'error');
+      addToast('Erro ao atualizar perfil: ' + err.message, 'error');
     } finally {
       setSavingProfile(false);
     }

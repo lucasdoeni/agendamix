@@ -15,6 +15,7 @@ import {
   CreditCard
 } from 'lucide-react';
 import { storageService } from '../services/storageService';
+import { API_URL } from '../services/apiConfig';
 import StarRating from '../components/common/StarRating';
 import Badge from '../components/common/Badge';
 import Button from '../components/common/Button';
@@ -34,16 +35,23 @@ export default function ProProfile() {
   useEffect(() => {
     let active = true;
     async function fetchPro() {
-      try {
-        const res = await fetch(`http://localhost:5000/api/professionals/${id}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (active) setProfessional(data);
+      if (API_URL) {
+        try {
+          const res = await fetch(`${API_URL}/professionals/${id}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (active) setProfessional(data);
+          }
+        } catch (err) {
+        } finally {
+          if (active) setLoading(false);
         }
-      } catch (err) {
-        console.warn('Erro ao carregar dados do profissional:', err);
-      } finally {
-        if (active) setLoading(false);
+      } else {
+        const localPro = storageService.getProfessionalById(id);
+        if (active) {
+          if (localPro) setProfessional(localPro);
+          setLoading(false);
+        }
       }
     }
     fetchPro();

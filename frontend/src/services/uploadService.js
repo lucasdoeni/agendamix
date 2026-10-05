@@ -1,9 +1,9 @@
-const API_URL = 'http://localhost:5000/api';
+import { API_URL } from './apiConfig';
 
 /**
- * Envia um arquivo de imagem diretamente para o backend Node.js
- * e o armazena na pasta /uploads do servidor.
- * Retorna a URL estática acessível da imagem.
+ * Envia um arquivo de imagem diretamente para o backend Node.js (em localhost)
+ * ou converte para Base64 Data URL (em produção/GitHub Pages) sem disparar
+ * requisições de rede privada.
  */
 export async function uploadImageToBackend(file) {
   if (!file) {
@@ -15,19 +15,32 @@ export async function uploadImageToBackend(file) {
     throw new Error('O arquivo excede o limite máximo permitido de 10MB.');
   }
 
-  const formData = new FormData();
-  formData.append('file', file);
+  // 1. Em desenvolvimento local com backend ativo
+  if (API_URL) {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
 
-  const res = await fetch(`${API_URL}/upload`, {
-    method: 'POST',
-    body: formData
-  });
+      const res = await fetch(`${API_URL}/upload`, {
+        method: 'POST',
+        body: formData
+      });
 
-  const data = await res.json();
+      const data = await res.json();
 
-  if (!res.ok || !data.success) {
-    throw new Error(data.error || 'Falha ao processar o upload no backend.');
+      if (res.ok && data.success) {
+        return data.url;
+      }
+    } catch (err) {
+      console.warn('Backend local indisponível para upload, convertendo para Base64 local:', err.message);
+    }
   }
 
-  return data.url;
+  // 2. Modo Autônomo / GitHub Pages / Produção: armazena como Base64 seguro
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('Erro ao processar imagem localmente.'));
+    reader.readAsDataURL(file);
+  });
 }

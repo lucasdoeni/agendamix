@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { storageService } from '../services/storageService';
 import { useToast } from '../context/ToastContext';
 import Button from '../components/common/Button';
+import { API_URL } from '../services/apiConfig';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -19,19 +20,23 @@ export default function Login() {
 
   const handleAdminMaintenanceLogin = async () => {
     setLoading(true);
-    try {
-      const res = await fetch('http://localhost:5000/api/admin/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: 'admin', password: 'admin' })
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        sessionStorage.setItem('agendamix_admin_auth', JSON.stringify(data.user));
-      } else {
+    if (API_URL) {
+      try {
+        const res = await fetch(`${API_URL}/admin/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: 'admin', password: 'admin' })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          sessionStorage.setItem('agendamix_admin_auth', JSON.stringify(data.user));
+        } else {
+          sessionStorage.setItem('agendamix_admin_auth', JSON.stringify({ role: 'admin', username: 'admin' }));
+        }
+      } catch {
         sessionStorage.setItem('agendamix_admin_auth', JSON.stringify({ role: 'admin', username: 'admin' }));
       }
-    } catch {
+    } else {
       sessionStorage.setItem('agendamix_admin_auth', JSON.stringify({ role: 'admin', username: 'admin' }));
     }
     addToast('Acesso ao Portal de Manutenção autorizado!', 'success');

@@ -1,9 +1,9 @@
 import { INITIAL_PROFESSIONALS, INITIAL_CLIENTS, INITIAL_BOOKINGS } from '../data/mockData';
+import { API_URL } from './apiConfig';
 
 const PROS_KEY = 'agendamix_pros_v3';
 const CLIENTS_KEY = 'agendamix_clients_v3';
 const BOOKINGS_KEY = 'agendamix_bookings_v3';
-const API_URL = 'http://localhost:5000/api';
 
 // Mescla listas garantindo que todos os itens da base estejam sempre presentes
 function mergeListById(existingList, baseList) {
@@ -22,6 +22,16 @@ function mergeListById(existingList, baseList) {
   return Array.from(map.values());
 }
 
+// Executa requisições ao backend APENAS quando API_URL existir (ambiente local de dev)
+async function safeFetch(endpoint, options = {}) {
+  if (!API_URL) return null;
+  try {
+    return await fetch(`${API_URL}${endpoint}`, options);
+  } catch (err) {
+    return null;
+  }
+}
+
 // Sincroniza dados com o backend MySQL ou com o dump estático na inicialização
 export async function initStorage() {
   // Limpa chaves legadas antigas
@@ -32,10 +42,10 @@ export async function initStorage() {
     localStorage.removeItem('agendamix_pros_v2');
   } catch {}
 
-  // 1. Tenta carregar do backend local MySQL se disponível
+  // 1. Tenta carregar do backend MySQL local APENAS se estiver em localhost de desenvolvimento
   try {
-    const res = await fetch(`${API_URL}/professionals`);
-    if (res.ok) {
+    const res = await safeFetch('/professionals');
+    if (res && res.ok) {
       const prosFromDb = await res.json();
       if (Array.isArray(prosFromDb) && prosFromDb.length > 0) {
         localStorage.setItem(PROS_KEY, JSON.stringify(prosFromDb));
@@ -93,16 +103,14 @@ export const storageService = {
   },
 
   async updateAvatar(proId, avatarBase64) {
-    // 1. Atualiza no MySQL
+    // 1. Atualiza no MySQL (apenas se em dev local)
     try {
-      await fetch(`${API_URL}/professionals/${proId}/avatar`, {
+      await safeFetch(`/professionals/${proId}/avatar`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ avatar: avatarBase64 })
       });
-    } catch (err) {
-      console.warn('Backend offline, salvando localmente:', err.message);
-    }
+    } catch (err) {}
 
     // 2. Atualiza no cache local
     const pro = this.getProfessionalById(proId);
@@ -114,16 +122,14 @@ export const storageService = {
   },
 
   async updateCover(proId, coverBase64) {
-    // 1. Atualiza no MySQL
+    // 1. Atualiza no MySQL (apenas se em dev local)
     try {
-      await fetch(`${API_URL}/professionals/${proId}/cover`, {
+      await safeFetch(`/professionals/${proId}/cover`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ coverImage: coverBase64 })
       });
-    } catch (err) {
-      console.warn('Backend offline, salvando capa localmente:', err.message);
-    }
+    } catch (err) {}
 
     // 2. Atualiza no cache local
     const pro = this.getProfessionalById(proId);
@@ -147,22 +153,19 @@ export const storageService = {
   },
 
   async registerProfessional(data) {
-    // 1. Registra no backend MySQL
+    // 1. Registra no backend MySQL (se dev local)
     try {
-      const res = await fetch(`${API_URL}/auth/register`, {
+      const res = await safeFetch('/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
-      if (res.ok) {
+      if (res && res.ok) {
         const result = await res.json();
-        // Atualiza profissionais do backend
         await initStorage();
         return result.user;
       }
-    } catch (err) {
-      console.warn('Backend MySQL offline, registrando no cache local:', err.message);
-    }
+    } catch (err) {}
 
     // Fallback local
     const pros = this.getProfessionals();
@@ -226,16 +229,14 @@ export const storageService = {
       description: serviceData.description || ''
     };
 
-    // Sincroniza com MySQL
+    // Sincroniza com MySQL (se dev local)
     try {
-      await fetch(`${API_URL}/professionals/${proId}/services`, {
+      await safeFetch(`/professionals/${proId}/services`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(serviceData)
       });
-    } catch (err) {
-      console.warn('Erro ao salvar serviço no MySQL:', err.message);
-    }
+    } catch (err) {}
 
     pro.services.push(newService);
     this.saveProfessional(pro);
@@ -256,16 +257,14 @@ export const storageService = {
       duration: parseInt(updatedData.duration, 10)
     };
 
-    // Sincroniza com MySQL
+    // Sincroniza com MySQL (se dev local)
     try {
-      await fetch(`${API_URL}/professionals/${proId}/services/${serviceId}`, {
+      await safeFetch(`/professionals/${proId}/services/${serviceId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedData)
       });
-    } catch (err) {
-      console.warn('Erro ao atualizar serviço no MySQL:', err.message);
-    }
+    } catch (err) {}
 
     this.saveProfessional(pro);
     return pro.services[index];
@@ -277,14 +276,12 @@ export const storageService = {
 
     pro.services = pro.services.filter(s => s.id !== serviceId);
 
-    // Sincroniza com MySQL
+    // Sincroniza com MySQL (se dev local)
     try {
-      await fetch(`${API_URL}/professionals/${proId}/services/${serviceId}`, {
+      await safeFetch(`/professionals/${proId}/services/${serviceId}`, {
         method: 'DELETE'
       });
-    } catch (err) {
-      console.warn('Erro ao deletar serviço no MySQL:', err.message);
-    }
+    } catch (err) {}
 
     this.saveProfessional(pro);
     return true;
@@ -297,16 +294,14 @@ export const storageService = {
 
     pro.schedule = { ...pro.schedule, ...scheduleConfig };
 
-    // Sincroniza com MySQL
+    // Sincroniza com MySQL (se dev local)
     try {
-      await fetch(`${API_URL}/professionals/${proId}/schedule`, {
+      await safeFetch(`/professionals/${proId}/schedule`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(scheduleConfig)
       });
-    } catch (err) {
-      console.warn('Erro ao salvar horários no MySQL:', err.message);
-    }
+    } catch (err) {}
 
     this.saveProfessional(pro);
     return pro.schedule;
@@ -319,16 +314,14 @@ export const storageService = {
     if (!pro.blockedSlots) pro.blockedSlots = [];
     pro.blockedSlots.push(blockedSlot);
 
-    // Sincroniza com MySQL
+    // Sincroniza com MySQL (se dev local)
     try {
-      await fetch(`${API_URL}/professionals/${proId}/blocked-slots`, {
+      await safeFetch(`/professionals/${proId}/blocked-slots`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(blockedSlot)
       });
-    } catch (err) {
-      console.warn('Erro ao gravar bloqueio no MySQL:', err.message);
-    }
+    } catch (err) {}
 
     this.saveProfessional(pro);
     return pro.blockedSlots;
@@ -343,15 +336,13 @@ export const storageService = {
       pro.blockedSlots.splice(index, 1);
     }
 
-    // Sincroniza com MySQL
+    // Sincroniza com MySQL (se dev local)
     if (slot?.id) {
       try {
-        await fetch(`${API_URL}/professionals/${proId}/blocked-slots/${slot.id}`, {
+        await safeFetch(`/professionals/${proId}/blocked-slots/${slot.id}`, {
           method: 'DELETE'
         });
-      } catch (err) {
-        console.warn('Erro ao remover bloqueio no MySQL:', err.message);
-      }
+      } catch (err) {}
     }
 
     this.saveProfessional(pro);
@@ -386,29 +377,30 @@ export const storageService = {
   },
 
   async createBooking(bookingData) {
-    // 1. Tenta salvar e validar conflito no MySQL
+    // 1. Tenta salvar e validar conflito no MySQL (se dev local)
     try {
-      const res = await fetch(`${API_URL}/bookings`, {
+      const res = await safeFetch('/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bookingData)
       });
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'Erro ao registrar reserva no banco de dados.');
-      }
+      if (res) {
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || 'Erro ao registrar reserva no banco de dados.');
+        }
 
-      const createdFromDb = await res.json();
-      const bookings = this.getBookings();
-      bookings.unshift(createdFromDb);
-      localStorage.setItem(BOOKINGS_KEY, JSON.stringify(bookings));
-      return createdFromDb;
+        const createdFromDb = await res.json();
+        const bookings = this.getBookings();
+        bookings.unshift(createdFromDb);
+        localStorage.setItem(BOOKINGS_KEY, JSON.stringify(bookings));
+        return createdFromDb;
+      }
     } catch (err) {
       if (err.message.includes('Este horário já foi reservado')) {
         throw err;
       }
-      console.warn('Backend MySQL inacessível, processando reserva local:', err.message);
     }
 
     // Validação local anti-conflito
@@ -437,16 +429,14 @@ export const storageService = {
   },
 
   async updateBookingStatus(bookingId, newStatus) {
-    // 1. Sincroniza com MySQL
+    // 1. Sincroniza com MySQL (se dev local)
     try {
-      await fetch(`${API_URL}/bookings/${bookingId}/status`, {
+      await safeFetch(`/bookings/${bookingId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
       });
-    } catch (err) {
-      console.warn('Erro ao atualizar status no MySQL:', err.message);
-    }
+    } catch (err) {}
 
     const bookings = this.getBookings();
     const index = bookings.findIndex(b => b.id === bookingId);
@@ -470,10 +460,10 @@ export const storageService = {
 
   // PORTAL DE MANUTENÇÃO / ADMIN
   async getAdminData() {
-    // 1. Tenta carregar dados do servidor MySQL
+    // 1. Tenta carregar dados do servidor MySQL (se dev local)
     try {
-      const res = await fetch(`${API_URL}/admin/users`);
-      if (res.ok) {
+      const res = await safeFetch('/admin/users');
+      if (res && res.ok) {
         const result = await res.json();
         if (result.professionals && Array.isArray(result.professionals)) {
           localStorage.setItem(PROS_KEY, JSON.stringify(result.professionals));
@@ -540,20 +530,18 @@ export const storageService = {
   },
 
   async createAdminUser(userData, userType = 'professional') {
-    // 1. Tenta MySQL
+    // 1. Tenta MySQL (se dev local)
     try {
-      const res = await fetch(`${API_URL}/admin/users/create`, {
+      const res = await safeFetch('/admin/users/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userType, ...userData })
       });
-      if (res.ok) {
+      if (res && res.ok) {
         const result = await res.json();
         return { success: true, message: result.message, id: result.id };
       }
-    } catch (err) {
-      console.warn('Backend offline, salvando usuário localmente:', err.message);
-    }
+    } catch (err) {}
 
     // 2. Fallback local
     if (userType === 'professional') {
@@ -607,20 +595,18 @@ export const storageService = {
   },
 
   async updateAdminPro(id, updateData) {
-    // 1. Tenta MySQL
+    // 1. Tenta MySQL (se dev local)
     try {
-      const res = await fetch(`${API_URL}/admin/professionals/${id}`, {
+      const res = await safeFetch(`/admin/professionals/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updateData)
       });
-      if (res.ok) {
+      if (res && res.ok) {
         const result = await res.json();
         return { success: true, message: result.message };
       }
-    } catch (err) {
-      console.warn('Backend offline, atualizando profissional localmente:', err.message);
-    }
+    } catch (err) {}
 
     // 2. Fallback local
     const pros = this.getProfessionals();
@@ -634,20 +620,18 @@ export const storageService = {
   },
 
   async updateAdminClient(id, updateData) {
-    // 1. Tenta MySQL
+    // 1. Tenta MySQL (se dev local)
     try {
-      const res = await fetch(`${API_URL}/admin/clients/${id}`, {
+      const res = await safeFetch(`/admin/clients/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updateData)
       });
-      if (res.ok) {
+      if (res && res.ok) {
         const result = await res.json();
         return { success: true, message: result.message };
       }
-    } catch (err) {
-      console.warn('Backend offline, atualizando cliente localmente:', err.message);
-    }
+    } catch (err) {}
 
     // 2. Fallback local
     const clients = this.getClients();
@@ -661,16 +645,14 @@ export const storageService = {
   },
 
   async deleteAdminPro(id) {
-    // 1. Tenta MySQL
+    // 1. Tenta MySQL (se dev local)
     try {
-      const res = await fetch(`${API_URL}/admin/professionals/${id}`, { method: 'DELETE' });
-      if (res.ok) {
+      const res = await safeFetch(`/admin/professionals/${id}`, { method: 'DELETE' });
+      if (res && res.ok) {
         const result = await res.json();
         return { success: true, message: result.message };
       }
-    } catch (err) {
-      console.warn('Backend offline, excluindo profissional localmente:', err.message);
-    }
+    } catch (err) {}
 
     // 2. Fallback local
     const pros = this.getProfessionals();
@@ -680,16 +662,14 @@ export const storageService = {
   },
 
   async deleteAdminClient(id, email, phone) {
-    // 1. Tenta MySQL
+    // 1. Tenta MySQL (se dev local)
     try {
-      const res = await fetch(`${API_URL}/admin/clients/${id || ''}?email=${encodeURIComponent(email || '')}&phone=${encodeURIComponent(phone || '')}`, { method: 'DELETE' });
-      if (res.ok) {
+      const res = await safeFetch(`/admin/clients/${id || ''}?email=${encodeURIComponent(email || '')}&phone=${encodeURIComponent(phone || '')}`, { method: 'DELETE' });
+      if (res && res.ok) {
         const result = await res.json();
         return { success: true, message: result.message };
       }
-    } catch (err) {
-      console.warn('Backend offline, excluindo cliente localmente:', err.message);
-    }
+    } catch (err) {}
 
     // 2. Fallback local
     const clients = this.getClients();
@@ -699,20 +679,18 @@ export const storageService = {
   },
 
   async updateAdminPaymentMethods(id, paymentMethods) {
-    // 1. Tenta MySQL
+    // 1. Tenta MySQL (se dev local)
     try {
-      const res = await fetch(`${API_URL}/admin/professionals/${id}/payment-methods`, {
+      const res = await safeFetch(`/admin/professionals/${id}/payment-methods`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ paymentMethods })
       });
-      if (res.ok) {
+      if (res && res.ok) {
         const result = await res.json();
         return { success: true, message: result.message };
       }
-    } catch (err) {
-      console.warn('Backend offline, salvando formas de pagamento localmente:', err.message);
-    }
+    } catch (err) {}
 
     // 2. Fallback local
     const pros = this.getProfessionals();

@@ -70,11 +70,11 @@ export default function Login() {
   };
 
   return (
-    <div style={{ backgroundColor: '#f8fafc', padding: '60px 0 80px', minHeight: '80vh', display: 'flex', alignItems: 'center' }}>
+    <div style={{ backgroundColor: '#f8fafc', padding: '40px 0 60px', minHeight: '80vh', display: 'flex', alignItems: 'center' }}>
       <div className="container-sm" style={{ maxWidth: '480px' }}>
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-          <h1 style={{ fontSize: '1.8rem', color: '#0f172a', fontWeight: 800 }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <h1 style={{ fontSize: '1.75rem', color: '#0f172a', fontWeight: 800 }}>
             Acessar o AgendaMix
           </h1>
           <p style={{ color: '#64748b', marginTop: '6px' }}>
@@ -139,7 +139,7 @@ export default function Login() {
         </div>
 
         {/* Login Card */}
-        <div className="card" style={{ padding: '28px' }}>
+        <div className="card">
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>

@@ -203,15 +203,15 @@ export default function ProRegister() {
         </div>
 
         {/* Form Container */}
-        <div className="card" style={{ padding: '32px' }}>
+        <div className="card">
           <form onSubmit={handleSubmit}>
             {/* Seção 1: Dados Pessoais & Acesso */}
             <h3 style={{ fontSize: '1.1rem', color: '#1e293b', marginBottom: '16px', paddingBottom: '8px', borderBottom: '1px solid #f1f5f9' }}>
               1. Dados do Responsável & Acesso
             </h3>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
-              <div className="form-group">
+            <div className="form-grid-2" style={{ marginBottom: '16px' }}>
+              <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Nome Completo *</label>
                 <input
                   type="text"
@@ -224,7 +224,7 @@ export default function ProRegister() {
                 {errors.name && <span className="form-error">{errors.name}</span>}
               </div>
 
-              <div className="form-group">
+              <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Telefone / WhatsApp *</label>
                 <input
                   type="tel"
@@ -238,8 +238,8 @@ export default function ProRegister() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
-              <div className="form-group">
+            <div className="form-grid-2" style={{ marginBottom: '16px' }}>
+              <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">E-mail Profissional *</label>
                 <input
                   type="email"
@@ -252,7 +252,7 @@ export default function ProRegister() {
                 {errors.email && <span className="form-error">{errors.email}</span>}
               </div>
 
-              <div className="form-group">
+              <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Senha de Acesso *</label>
                 <input
                   type="password"
@@ -352,7 +352,7 @@ export default function ProRegister() {
             </h3>
 
             {/* Rua e Número */}
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '16px', marginBottom: '14px' }}>
+            <div className="form-grid-address" style={{ marginBottom: '14px' }}>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Rua / Logradouro *</label>
                 <input
@@ -381,7 +381,7 @@ export default function ProRegister() {
             </div>
 
             {/* Bairro e Complemento (opcional) */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '14px' }}>
+            <div className="form-grid-2" style={{ marginBottom: '14px' }}>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Bairro *</label>
                 <input
@@ -409,7 +409,7 @@ export default function ProRegister() {
             </div>
 
             {/* Cidade, Estado (UF) e País */}
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+            <div className="form-grid-city-state" style={{ marginBottom: '20px' }}>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Cidade *</label>
                 <input
@@ -488,7 +488,7 @@ export default function ProRegister() {
                   />
                 </div>
 
-                <div style={{ flex: 1, minWidth: '220px' }}>
+                <div style={{ flex: 1, minWidth: '160px' }}>
                   <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', display: 'block', marginBottom: '4px' }}>
                     1. Foto de Perfil ou Logo
                   </span>
@@ -587,7 +587,7 @@ export default function ProRegister() {
               3. Cadastre seu Primeiro Serviço
             </h3>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+            <div className="form-grid-2">
               <div className="form-group">
                 <label className="form-label">Nome do Serviço</label>
                 <input

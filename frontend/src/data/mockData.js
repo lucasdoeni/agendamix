@@ -1,5 +1,5 @@
 // Dados de demonstração e fallback para a plataforma AgendaMix
-// Sincronizado automaticamente com o banco MySQL agendamix_db em 05/10/2026, 18:50:45
+// Sincronizado automaticamente com o banco MySQL agendamix_db em 05/10/2026, 19:09:26
 
 export const CATEGORIES = [
   { id: 'barbearia', label: 'Barbearia', icon: 'Scissors', count: 12 },

@@ -366,7 +366,7 @@ export default function BookingModal({
           </div>
 
           {/* Navigation Buttons */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+          <div className="mobile-stack" style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
             <Button variant="outline" icon={ArrowLeft} onClick={() => setStep(1)}>
               Voltar aos Serviços
             </Button>
@@ -420,7 +420,7 @@ export default function BookingModal({
             {errors.clientName && <span className="form-error">{errors.clientName}</span>}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div className="form-grid-2">
             <div className="form-group">
               <label className="form-label">WhatsApp / Telefone *</label>
               <input
@@ -451,7 +451,7 @@ export default function BookingModal({
           </p>
 
           {/* Buttons */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+          <div className="mobile-stack" style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
             <Button variant="outline" icon={ArrowLeft} onClick={() => setStep(2)}>
               Alterar Horário
             </Button>
@@ -600,7 +600,7 @@ export default function BookingModal({
             </div>
           )}
 
-          <div style={{ display: 'flex', gap: '12px' }}>
+          <div className="mobile-stack" style={{ display: 'flex', gap: '12px' }}>
             {isClient && (
               <Button
                 variant="outline"

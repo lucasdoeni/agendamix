@@ -113,7 +113,7 @@ export default function DashboardSchedule() {
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
         {/* Seção 1: Configuração Semanal */}
         <div className="card">
           <h3 style={{ fontSize: '1.15rem', color: '#0f172a', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -127,7 +127,7 @@ export default function DashboardSchedule() {
               <label className="form-label" style={{ marginBottom: '10px', display: 'block' }}>
                 Dias da Semana em que você Atende:
               </label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '8px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '8px' }}>
                 {weekdays.map(w => {
                   const isChecked = days.includes(w.id);
                   return (
@@ -161,7 +161,7 @@ export default function DashboardSchedule() {
             </div>
 
             {/* Faixa Horária */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div className="form-grid-2">
               <div className="form-group">
                 <label className="form-label">Abertura / Início</label>
                 <input
@@ -186,7 +186,7 @@ export default function DashboardSchedule() {
             </div>
 
             {/* Pausa Almoço */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div className="form-grid-2">
               <div className="form-group">
                 <label className="form-label">Início do Almoço</label>
                 <input
@@ -240,7 +240,7 @@ export default function DashboardSchedule() {
               Adicionar Novo Bloqueio Manual:
             </span>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div className="form-grid-2">
               <div className="form-group">
                 <label className="form-label">Data</label>
                 <input

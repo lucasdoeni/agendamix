@@ -65,19 +65,22 @@ export default function Explore() {
         </div>
 
         {/* Filter Bar */}
-        <div style={{
-          backgroundColor: '#ffffff',
-          borderRadius: '16px',
-          padding: '16px 20px',
-          boxShadow: 'var(--shadow-sm)',
-          border: '1px solid #e2e8f0',
-          marginBottom: '28px',
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '16px',
-          alignItems: 'center',
-          justifyContent: 'space-between'
-        }}>
+        <div 
+          className="explore-filter-bar"
+          style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '16px',
+            padding: '16px 20px',
+            boxShadow: 'var(--shadow-sm)',
+            border: '1px solid #e2e8f0',
+            marginBottom: '28px',
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '16px',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}
+        >
           {/* Search Input */}
           <div style={{
             display: 'flex',

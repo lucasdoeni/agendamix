@@ -689,8 +689,8 @@ export default function AdminMaintenance() {
             </div>
 
             {/* Tabela de Profissionais */}
-            <div className="card" style={{ padding: 0, overflowX: 'auto', marginBottom: '40px' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
+            <div className="card table-responsive" style={{ padding: 0, marginBottom: '40px' }}>
+              <table style={{ width: '100%', minWidth: '760px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
                 <thead>
                   <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#475569' }}>
                     <th style={{ padding: '14px 20px' }}>Profissional / Estabelecimento</th>
@@ -921,8 +921,8 @@ export default function AdminMaintenance() {
               </Button>
             </div>
 
-            <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
+            <div className="card table-responsive" style={{ padding: 0 }}>
+              <table style={{ width: '100%', minWidth: '640px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
                 <thead>
                   <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#475569' }}>
                     <th style={{ padding: '12px 20px' }}>Nome do Cliente</th>
@@ -1307,7 +1307,7 @@ export default function AdminMaintenance() {
           </div>
 
           {/* CAMPOS COMUNS */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div className="form-grid-2">
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">Nome Completo *</label>
               <input
@@ -1346,7 +1346,7 @@ export default function AdminMaintenance() {
             )}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div className="form-grid-2" style={{ marginTop: '12px' }}>
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">E-mail *</label>
               <input
@@ -1436,7 +1436,7 @@ export default function AdminMaintenance() {
                   📍 Endereço do Estabelecimento
                 </span>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                <div className="form-grid-address" style={{ marginBottom: '10px' }}>
                   <div>
                     <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b' }}>Rua / Avenida</label>
                     <input
@@ -1459,7 +1459,7 @@ export default function AdminMaintenance() {
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                <div className="form-grid-2" style={{ marginBottom: '10px' }}>
                   <div>
                     <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b' }}>Bairro</label>
                     <input
@@ -1482,7 +1482,7 @@ export default function AdminMaintenance() {
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1.5fr', gap: '10px' }}>
+                <div className="form-grid-city-state">
                   <div>
                     <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b' }}>Cidade</label>
                     <input
@@ -1527,13 +1527,14 @@ export default function AdminMaintenance() {
             </>
           )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '12px', marginTop: '12px' }}>
-            <Button type="button" variant="outline" onClick={() => setCreateModalOpen(false)}>
+          <div className="mobile-stack" style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+            <Button type="button" variant="outline" fullWidth onClick={() => setCreateModalOpen(false)}>
               Cancelar
             </Button>
             <Button
               type="submit"
               variant="primary"
+              fullWidth
               loading={savingCreate}
               icon={CheckCircle2}
             >
@@ -1554,7 +1555,7 @@ export default function AdminMaintenance() {
         maxWidth="700px"
       >
         <form onSubmit={handleSaveEditPro} style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '74vh', overflowY: 'auto', paddingRight: '4px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div className="form-grid-2">
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">Nome Completo do Responsável *</label>
               <input
@@ -1578,7 +1579,7 @@ export default function AdminMaintenance() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '12px' }}>
+          <div className="form-grid-2">
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">E-mail de Login *</label>
               <input
@@ -1663,7 +1664,7 @@ export default function AdminMaintenance() {
               📍 Localização e Endereço Completo
             </span>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: '10px', marginBottom: '10px' }}>
+            <div className="form-grid-address" style={{ marginBottom: '10px' }}>
               <div>
                 <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b' }}>Rua / Logradouro</label>
                 <input
@@ -1684,7 +1685,7 @@ export default function AdminMaintenance() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+            <div className="form-grid-2" style={{ marginBottom: '10px' }}>
               <div>
                 <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b' }}>Bairro</label>
                 <input
@@ -1705,7 +1706,7 @@ export default function AdminMaintenance() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1.5fr', gap: '10px' }}>
+            <div className="form-grid-city-state">
               <div>
                 <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b' }}>Cidade</label>
                 <input
@@ -1747,13 +1748,14 @@ export default function AdminMaintenance() {
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '12px', marginTop: '12px' }}>
-            <Button type="button" variant="outline" onClick={() => setEditProModalOpen(false)}>
+          <div className="mobile-stack" style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+            <Button type="button" variant="outline" fullWidth onClick={() => setEditProModalOpen(false)}>
               Cancelar
             </Button>
             <Button
               type="submit"
               variant="primary"
+              fullWidth
               loading={savingEditPro}
               icon={CheckCircle2}
             >
@@ -1817,13 +1819,14 @@ export default function AdminMaintenance() {
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '12px', marginTop: '12px' }}>
-            <Button type="button" variant="outline" onClick={() => setEditClientModalOpen(false)}>
+          <div className="mobile-stack" style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+            <Button type="button" variant="outline" fullWidth onClick={() => setEditClientModalOpen(false)}>
               Cancelar
             </Button>
             <Button
               type="submit"
               variant="primary"
+              fullWidth
               loading={savingEditClient}
               icon={CheckCircle2}
             >
@@ -1872,11 +1875,11 @@ export default function AdminMaintenance() {
             )}
           </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>
+          <div className="mobile-stack" style={{ display: 'flex', gap: '12px' }}>
+            <Button variant="outline" fullWidth onClick={() => setDeleteModalOpen(false)}>
               Cancelar
             </Button>
-            <Button variant="danger" icon={Trash2} onClick={handleConfirmDelete}>
+            <Button variant="danger" fullWidth icon={Trash2} onClick={handleConfirmDelete}>
               Confirmar Exclusão
             </Button>
           </div>

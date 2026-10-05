@@ -76,24 +76,24 @@ export default function ClientRegister() {
   };
 
   return (
-    <div style={{ backgroundColor: '#f8fafc', padding: '60px 0 80px', minHeight: '85vh', display: 'flex', alignItems: 'center' }}>
+    <div style={{ backgroundColor: '#f8fafc', padding: '40px 0 60px', minHeight: '85vh', display: 'flex', alignItems: 'center' }}>
       <div className="container-sm" style={{ maxWidth: '480px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <div style={{
-            width: '54px',
-            height: '54px',
+            width: '52px',
+            height: '52px',
             borderRadius: '16px',
             background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             color: '#ffffff',
-            margin: '0 auto 16px',
+            margin: '0 auto 14px',
             boxShadow: '0 8px 16px rgba(37, 99, 235, 0.25)'
           }}>
-            <User size={28} />
+            <User size={26} />
           </div>
-          <h1 style={{ fontSize: '1.8rem', color: '#0f172a', fontWeight: 800 }}>
+          <h1 style={{ fontSize: '1.75rem', color: '#0f172a', fontWeight: 800 }}>
             Criar Conta de Cliente
           </h1>
           <p style={{ color: '#64748b', marginTop: '6px' }}>
@@ -101,7 +101,7 @@ export default function ClientRegister() {
           </p>
         </div>
 
-        <div className="card" style={{ padding: '32px' }}>
+        <div className="card">
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">Nome Completo *</label>

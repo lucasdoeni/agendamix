@@ -95,6 +95,7 @@ export default function Home() {
           {/* SEARCH BAR WIDGET */}
           <form
             onSubmit={handleSearchSubmit}
+            className="home-search-form"
             style={{
               backgroundColor: '#ffffff',
               padding: '10px 14px',

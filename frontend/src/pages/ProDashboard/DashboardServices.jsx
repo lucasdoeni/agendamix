@@ -194,7 +194,7 @@ export default function DashboardServices() {
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div className="form-grid-2">
             <div className="form-group">
               <label className="form-label">Preço (R$) *</label>
               <input
@@ -238,11 +238,11 @@ export default function DashboardServices() {
             />
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
-            <Button variant="outline" onClick={() => setIsModalOpen(false)}>
+          <div className="mobile-stack" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
+            <Button variant="outline" fullWidth onClick={() => setIsModalOpen(false)}>
               Cancelar
             </Button>
-            <Button type="submit" variant="primary" icon={Check}>
+            <Button type="submit" variant="primary" fullWidth icon={Check}>
               Salvar Serviço
             </Button>
           </div>

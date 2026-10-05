@@ -33,7 +33,7 @@ export default function Modal({ isOpen, onClose, title, subtitle, children, maxW
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '16px',
+        padding: '12px',
         animation: 'fadeIn 0.2s ease-out'
       }}
       onClick={(e) => {
@@ -41,6 +41,7 @@ export default function Modal({ isOpen, onClose, title, subtitle, children, maxW
       }}
     >
       <div
+        className="modal-dialog"
         style={{
           backgroundColor: '#ffffff',
           borderRadius: '20px',
@@ -56,7 +57,7 @@ export default function Modal({ isOpen, onClose, title, subtitle, children, maxW
       >
         {/* Header */}
         <div style={{
-          padding: '1.25rem 1.5rem',
+          padding: '1rem 1.25rem',
           borderBottom: '1px solid #f1f5f9',
           display: 'flex',
           alignItems: 'flex-start',
@@ -64,8 +65,8 @@ export default function Modal({ isOpen, onClose, title, subtitle, children, maxW
           background: '#ffffff'
         }}>
           <div>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0f172a' }}>{title}</h3>
-            {subtitle && <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '2px' }}>{subtitle}</p>}
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0f172a' }}>{title}</h3>
+            {subtitle && <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '2px' }}>{subtitle}</p>}
           </div>
           <button
             onClick={onClose}
@@ -87,11 +88,15 @@ export default function Modal({ isOpen, onClose, title, subtitle, children, maxW
         </div>
 
         {/* Content */}
-        <div style={{
-          padding: '1.5rem',
-          overflowY: 'auto',
-          flex: 1
-        }}>
+        <div 
+          className="modal-body"
+          style={{
+            padding: '1.25rem',
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            flex: 1
+          }}
+        >
           {children}
         </div>
       </div>

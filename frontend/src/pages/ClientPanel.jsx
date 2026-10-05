@@ -214,7 +214,9 @@ export default function ClientPanel() {
             display: 'flex',
             gap: '8px',
             borderBottom: '2px solid #e2e8f0',
-            marginBottom: '28px'
+            marginBottom: '28px',
+            overflowX: 'auto',
+            paddingBottom: '2px'
           }}>
             <button
               onClick={() => setActiveTab('bookings')}
@@ -419,7 +421,7 @@ export default function ClientPanel() {
         {/* ABA 2: EDITAR MEUS DADOS (PERFIL DO CLIENTE) */}
         {/* ======================================================== */}
         {isClient && activeTab === 'profile' && (
-          <div className="card" style={{ padding: '32px' }}>
+          <div className="card">
             <div style={{ marginBottom: '24px', borderBottom: '1px solid #f1f5f9', paddingBottom: '16px' }}>
               <h3 style={{ fontSize: '1.3rem', color: '#0f172a', fontWeight: 800 }}>
                 Meus Dados Cadastrais
@@ -443,7 +445,7 @@ export default function ClientPanel() {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
+              <div className="form-grid-2">
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label className="form-label">E-mail *</label>
                   <input
@@ -475,7 +477,7 @@ export default function ClientPanel() {
                   Deixe os campos abaixo em branco caso deseje manter sua senha atual.
                 </p>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
+                <div className="form-grid-2">
                   <div className="form-group" style={{ marginBottom: 0 }}>
                     <label className="form-label">Nova Senha</label>
                     <input

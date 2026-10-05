@@ -10,6 +10,8 @@ html {
   font-size: 16px;
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 body {
@@ -20,6 +22,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -248,3 +252,181 @@ img {
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* ======================================================== */
+/* RESPONSIVE UTILITIES & MOBILE OPTIMIZATIONS              */
+/* ======================================================== */
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 1rem;
+}
+
+/* Grids adaptativas para formulários */
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.form-grid-address {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 14px;
+}
+
+.form-grid-city-state {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 14px;
+}
+
+/* Ajustes para telas menores que 768px (Tablets e Smartphones) */
+@media (max-width: 768px) {
+  .container {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  .container-sm {
+    padding-left: 0.85rem !important;
+    padding-right: 0.85rem !important;
+  }
+
+  .card {
+    padding: 1.25rem !important;
+  }
+
+  .form-grid-3 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .form-grid-city-state {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Ajustes refinados para Smartphones (< 640px) */
+@media (max-width: 640px) {
+  html {
+    font-size: 15px;
+  }
+
+  h1 {
+    font-size: 1.55rem !important;
+    line-height: 1.2 !important;
+  }
+
+  h2 {
+    font-size: 1.35rem !important;
+  }
+
+  h3 {
+    font-size: 1.15rem !important;
+  }
+
+  .container, .container-sm {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  .card {
+    padding: 1rem !important;
+    border-radius: var(--radius-md) !important;
+  }
+
+  .grid-cards {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  /* Colapsa todas as grids de 2 colunas para 1 coluna em celular */
+  .form-grid-2, 
+  .form-grid-address, 
+  .form-grid-city-state,
+  .mobile-col-1 {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    font-size: 16px !important; /* Evita auto-zoom indesejado no iOS Safari */
+    padding: 0.7rem 0.85rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Botões e ações em mobile */
+  .mobile-full-width {
+    width: 100% !important;
+  }
+
+  .mobile-stack {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  /* Modais ocupam tela cheia com respiro em smartphone */
+  .modal-dialog {
+    margin: 8px !important;
+    max-height: 94vh !important;
+    border-radius: 14px !important;
+  }
+
+  .modal-body {
+    padding: 1rem !important;
+  }
+
+  /* Barra de busca da Home */
+  .home-search-form {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 12px !important;
+    border-radius: 14px !important;
+  }
+
+  .home-search-form > div {
+    width: 100% !important;
+    min-width: 100% !important;
+    padding: 4px 0 !important;
+  }
+
+  .home-search-form select {
+    width: 100% !important;
+    border-left: none !important;
+    border-top: 1px solid #e2e8f0 !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 10px 4px !important;
+  }
+
+  .home-search-form button {
+    width: 100% !important;
+  }
+
+  /* Barra de filtro do Explorar */
+  .explore-filter-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 14px !important;
+    gap: 12px !important;
+  }
+
+  .explore-filter-bar > div:first-child {
+    min-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .explore-filter-bar select {
+    width: 100% !important;
+  }
+}
+
